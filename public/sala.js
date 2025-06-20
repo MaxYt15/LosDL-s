@@ -32,6 +32,8 @@ const chatMessages = document.getElementById('chat-messages');
 const userApodo = document.getElementById('user-apodo');
 const logoutBtnChat = document.getElementById('logout-btn-chat');
 const escribiendoBox = document.getElementById('escribiendo-box');
+const usuariosRegistradosCantidad = document.getElementById('usuarios-registrados-cantidad');
+const usuariosRegistradosLista = document.getElementById('usuarios-registrados-lista');
 let escribiendoTimeout = null;
 let apodoActual = null;
 
@@ -213,4 +215,16 @@ chatForm.onsubmit = async (e) => {
   // Limpiar escribiendo
   const escribiendoRef = doc(db, 'sala', 'escribiendo');
   setDoc(escribiendoRef, { apodo: '' }, { merge: true });
-}; 
+};
+
+// Mostrar usuarios registrados y apodos en tiempo real
+const apodosRef = collection(db, 'apodos');
+onSnapshot(apodosRef, (snapshot) => {
+  const apodos = [];
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    apodos.push({ apodo: data.apodo, uid: data.uid });
+  });
+  usuariosRegistradosCantidad.textContent = apodos.length;
+  usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
+}); 

@@ -493,3 +493,38 @@ footer {
   margin-bottom: 2px;
   filter: drop-shadow(0 0 4px #00f2ea);
 }
+
+#usuarios-registrados-box {
+  width: 100%;
+  background: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  padding: 1.1rem 1.5rem 0.7rem 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+#usuarios-registrados-titulo {
+  color: #00ff99;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+#usuarios-registrados-lista {
+  margin-top: 0.7em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7em 1.2em;
+  justify-content: center;
+  color: #fff;
+  font-size: 1em;
+}
+#usuarios-registrados-lista .apodo-lista {
+  background: #181818;
+  border-radius: 6px;
+  padding: 0.2em 0.8em;
+  box-shadow: 0 0 4px #00ff9922;
+  color: #00ff99;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+}
