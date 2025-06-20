@@ -368,7 +368,7 @@ footer {
   background: #222;
   border-radius: 10px;
   box-shadow: 0 0 8px #00ff9944;
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -386,14 +386,14 @@ footer {
 }
 #chat-messages {
   width: 100%;
-  height: 380px;
+  height: 900px;
   background: #181818;
   border-radius: 8px;
   overflow-y: auto;
   margin-bottom: 0.7rem;
   padding: 0.7em 0.5em;
   box-shadow: 0 0 6px #00ff9944;
-  font-size: 1.08em;
+  font-size: 1.12em;
 }
 .chat-msg {
   margin-bottom: 0.4em;
@@ -439,23 +439,16 @@ footer {
   background: #00cc77;
   color: #fff;
 }
-@media (max-width: 700px) {
+@media (max-width: 1100px) {
   .sala-container {
     max-width: 98vw;
-    padding: 1rem 0.2rem;
-  }
-  #auth-section {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  #register-box, #login-box {
-    width: 100%;
+    min-width: 0;
   }
   #chat-section {
-    padding: 0.7rem 0.2rem;
+    padding: 1.2rem 0.2rem;
   }
   #chat-messages {
-    height: 160px;
+    height: 500px;
   }
 }
 
