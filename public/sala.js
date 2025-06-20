@@ -34,8 +34,10 @@ const logoutBtnChat = document.getElementById('logout-btn-chat');
 const escribiendoBox = document.getElementById('escribiendo-box');
 const usuariosRegistradosCantidad = document.getElementById('usuarios-registrados-cantidad');
 const usuariosRegistradosLista = document.getElementById('usuarios-registrados-lista');
+const replyPreviewBox = document.getElementById('reply-preview-box');
 let escribiendoTimeout = null;
 let apodoActual = null;
+let currentReply = null;
 
 const VERIFICADOS = {
   "K0PRXXhG4MeCWS9Gep5JpdxD0Nn2": true, // Sunkovv
@@ -137,7 +139,7 @@ if (logoutBtnChat) {
   logoutBtnChat.addEventListener('click', () => signOut(auth));
 }
 
-// --- Chat con reacciones tipo WhatsApp ---
+// --- Chat con respuestas y reacciones tipo WhatsApp ---
 function cargarChat(apodo) {
   chatMessages.innerHTML = '';
   const mensajesQuery = query(collection(db, 'mensajes'), orderBy('timestamp', 'asc'));
@@ -154,10 +156,22 @@ function cargarChat(apodo) {
       if (uidVerificado && VERIFICADOS[uidVerificado]) icono = VERIFICADO_ICON;
       const div = document.createElement('div');
       div.className = 'chat-msg';
+      div.id = mensajeId;
       div.style.position = 'relative';
       // Contenedor principal del mensaje (nombre y hora arriba, texto abajo)
       const msgMain = document.createElement('div');
       msgMain.className = 'msg-main';
+      // Mensaje citado (si es una respuesta)
+      if (data.replyTo) {
+        const quotedReply = document.createElement('div');
+        quotedReply.className = 'quoted-reply';
+        quotedReply.innerHTML = `<b>${data.replyTo.author}</b><span class="reply-text">${data.replyTo.text}</span>`;
+        quotedReply.onclick = () => {
+          const originalMsg = document.getElementById(data.replyTo.messageId);
+          if (originalMsg) originalMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+        msgMain.appendChild(quotedReply);
+      }
       // Header: apodo, verificado, hora
       const msgHeader = document.createElement('div');
       msgHeader.className = 'msg-header';
@@ -185,6 +199,27 @@ function cargarChat(apodo) {
         });
         msgMain.appendChild(reaccionesBox);
       }
+      // Botones de acción (reaccionar, responder)
+      const actionButtons = document.createElement('div');
+      actionButtons.className = 'action-buttons';
+      // Botón de respuesta
+      const btnReply = document.createElement('button');
+      btnReply.className = 'reply-btn';
+      btnReply.title = 'Responder';
+      btnReply.innerHTML = '<i class="fas fa-reply"></i>';
+      btnReply.onclick = () => {
+        currentReply = {
+          messageId: mensajeId,
+          author: data.apodo,
+          text: data.texto
+        };
+        replyPreviewBox.innerHTML = `<b>Respondiendo a ${data.apodo}</b><span class="reply-text">${data.texto}</span><button id="cancel-reply-btn">×</button>`;
+        replyPreviewBox.style.display = 'block';
+        document.getElementById('cancel-reply-btn').onclick = () => {
+          currentReply = null;
+          replyPreviewBox.style.display = 'none';
+        };
+      };
       // Botón de reacción (icono Font Awesome carita feliz +)
       const btnReaccion = document.createElement('button');
       btnReaccion.className = 'reaccion-btn';
@@ -234,8 +269,10 @@ function cargarChat(apodo) {
           });
         }, 50);
       };
+      actionButtons.appendChild(btnReply);
+      actionButtons.appendChild(btnReaccion);
       div.appendChild(msgMain);
-      div.appendChild(btnReaccion);
+      div.appendChild(actionButtons);
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -246,13 +283,22 @@ function cargarChat(apodo) {
     const texto = chatInput.value.trim();
     if (!texto) return;
     const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    await addDoc(collection(db, 'mensajes'), {
-      apodo,
+    const nuevoMensaje = {
+      apodo: apodoActual,
       texto,
       hora,
       timestamp: serverTimestamp()
-    });
+    };
+    if (currentReply) {
+      nuevoMensaje.replyTo = currentReply;
+    }
+    await addDoc(collection(db, 'mensajes'), nuevoMensaje);
     chatInput.value = '';
+    currentReply = null;
+    replyPreviewBox.style.display = 'none';
+    // Limpiar escribiendo
+    const escribiendoRef = doc(db, 'sala', 'escribiendo');
+    setDoc(escribiendoRef, { apodo: '' }, { merge: true });
   };
 }
 
@@ -280,23 +326,6 @@ chatInput.addEventListener('input', () => {
     setDoc(escribiendoRef, { apodo: '' }, { merge: true });
   }, 1500);
 });
-
-chatForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const texto = chatInput.value.trim();
-  if (!texto) return;
-  const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  await addDoc(collection(db, 'mensajes'), {
-    apodo: apodoActual,
-    texto,
-    hora,
-    timestamp: serverTimestamp()
-  });
-  chatInput.value = '';
-  // Limpiar escribiendo
-  const escribiendoRef = doc(db, 'sala', 'escribiendo');
-  setDoc(escribiendoRef, { apodo: '' }, { merge: true });
-};
 
 // Mostrar usuarios registrados y apodos en tiempo real
 const apodosRef = collection(db, 'apodos');

@@ -655,3 +655,72 @@ footer {
   transform: scale(1.15) rotate(-8deg);
   opacity: 1;
 }
+
+.reply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #00ff99;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+  outline: none;
+  margin-left: 0.4em;
+  opacity: 0.8;
+}
+.reply-btn:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+#reply-preview-box {
+  width: 100%;
+  background: #181818;
+  border-left: 3px solid #00ff99;
+  border-radius: 6px;
+  padding: 0.5em 0.7em;
+  margin-bottom: 0.5em;
+  font-size: 0.95em;
+  animation: fadeIn 0.3s;
+  position: relative;
+}
+#reply-preview-box b {
+  color: #00ff99;
+}
+#reply-preview-box .reply-text {
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+#cancel-reply-btn {
+  position: absolute;
+  top: 0.4em;
+  right: 0.4em;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+.quoted-reply {
+  background: #181818;
+  border-left: 3px solid #00ff99;
+  border-radius: 4px;
+  padding: 0.2em 0.5em;
+  margin-bottom: 0.2em;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.quoted-reply b {
+  color: #00ff99;
+}
+.quoted-reply .reply-text {
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
