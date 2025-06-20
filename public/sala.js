@@ -168,6 +168,23 @@ function cargarChat(apodo) {
       msgTexto.textContent = data.texto;
       msgMain.appendChild(msgHeader);
       msgMain.appendChild(msgTexto);
+      // Reacciones (deben ir debajo del texto)
+      if (data.reacciones) {
+        const reaccionesBox = document.createElement('div');
+        reaccionesBox.className = 'reacciones-box';
+        const resumen = {};
+        Object.values(data.reacciones).forEach(r => {
+          if (!resumen[r.emoji]) resumen[r.emoji] = 0;
+          resumen[r.emoji]++;
+        });
+        Object.entries(resumen).forEach(([emoji, count]) => {
+          const span = document.createElement('span');
+          span.className = 'reaccion-emoji';
+          span.textContent = emoji + ' ' + count;
+          reaccionesBox.appendChild(span);
+        });
+        msgMain.appendChild(reaccionesBox);
+      }
       // Botón de reacción (icono Font Awesome carita feliz +)
       const btnReaccion = document.createElement('button');
       btnReaccion.className = 'reaccion-btn';
