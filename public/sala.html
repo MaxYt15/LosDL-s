@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LosDL'S - Sala</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="sala-container">
+    <h1>Sala LosDL'S</h1>
+    <div id="auth-section">
+      <div id="register-box">
+        <h2>Registrarse</h2>
+        <form id="register-form">
+          <input type="text" id="register-apodo" placeholder="Apodo único" required maxlength="20" />
+          <input type="email" id="register-email" placeholder="Correo electrónico" required />
+          <input type="password" id="register-password" placeholder="Contraseña" required minlength="6" />
+          <button type="submit">Registrarse</button>
+        </form>
+        <div id="register-msg"></div>
+      </div>
+      <div id="login-box">
+        <h2>Iniciar sesión</h2>
+        <form id="login-form">
+          <input type="email" id="login-email" placeholder="Correo electrónico" required />
+          <input type="password" id="login-password" placeholder="Contraseña" required />
+          <button type="submit">Iniciar sesión</button>
+        </form>
+        <div id="login-msg"></div>
+      </div>
+    </div>
+    <div id="verify-section" style="display:none;">
+      <p>Por favor, verifica tu correo electrónico para acceder a la sala.<br>Revisa tu bandeja de entrada y spam.</p>
+      <button id="resend-verification">Reenviar correo de verificación</button>
+      <button id="logout-btn">Cerrar sesión</button>
+    </div>
+    <div id="chat-section" style="display:none;">
+      <div class="chat-header">
+        <span id="user-apodo"></span>
+        <button id="logout-btn-chat">Cerrar sesión</button>
+      </div>
+      <div id="chat-messages"></div>
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Escribe tu mensaje..." maxlength="200" required />
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </div>
+  <script type="module" src="sala.js"></script>
+</body>
+</html> 

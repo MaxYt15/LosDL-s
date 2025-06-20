@@ -280,3 +280,202 @@ footer {
   50% { transform: scale(1.4); color: #fff; text-shadow: 0 0 20px #00ff99, 0 0 40px #00ff99; }
   100% { transform: scale(1); color: #00ff99; text-shadow: 0 0 10px #00ff99; }
 }
+
+.sala-container {
+  max-width: 420px;
+  margin: 2.5rem auto;
+  background: #181818;
+  border-radius: 16px;
+  box-shadow: 0 0 20px #00ff99aa;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sala-container h1 {
+  color: #00ff99;
+  text-shadow: 0 0 10px #00ff99;
+  margin-bottom: 1.2rem;
+}
+#auth-section {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+#register-box, #login-box {
+  background: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  padding: 1rem 1.2rem;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#register-box h2, #login-box h2 {
+  color: #00ff99;
+  margin-bottom: 0.7rem;
+}
+#register-form, #login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+#register-form input, #login-form input {
+  padding: 0.5em;
+  border-radius: 6px;
+  border: 1px solid #00ff99;
+  background: #181818;
+  color: #fff;
+  font-size: 1em;
+}
+#register-form button, #login-form button, #logout-btn, #logout-btn-chat, #resend-verification {
+  background: #00ff99;
+  color: #181818;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  font-weight: bold;
+  margin-top: 0.5em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#register-form button:hover, #login-form button:hover, #logout-btn:hover, #logout-btn-chat:hover, #resend-verification:hover {
+  background: #00cc77;
+  color: #fff;
+}
+#register-msg, #login-msg {
+  color: #ff4d4d;
+  font-size: 0.95em;
+  margin-top: 0.3em;
+  min-height: 1.2em;
+}
+#verify-section {
+  background: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+#chat-section {
+  width: 100%;
+  background: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.chat-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.7rem;
+}
+#user-apodo {
+  color: #00ff99;
+  font-weight: bold;
+}
+#chat-messages {
+  width: 100%;
+  height: 220px;
+  background: #181818;
+  border-radius: 8px;
+  overflow-y: auto;
+  margin-bottom: 0.7rem;
+  padding: 0.7em 0.5em;
+  box-shadow: 0 0 6px #00ff9944;
+  font-size: 1em;
+}
+.chat-msg {
+  margin-bottom: 0.4em;
+  padding: 0.3em 0.5em;
+  border-radius: 6px;
+  background: #222;
+  color: #fff;
+  box-shadow: 0 0 4px #00ff9922;
+}
+.chat-msg b {
+  color: #00ff99;
+}
+.chat-hora {
+  color: #aaa;
+  font-size: 0.85em;
+  margin-left: 0.5em;
+}
+#chat-form {
+  width: 100%;
+  display: flex;
+  gap: 0.5em;
+}
+#chat-input {
+  flex: 1;
+  padding: 0.5em;
+  border-radius: 6px;
+  border: 1px solid #00ff99;
+  background: #181818;
+  color: #fff;
+  font-size: 1em;
+}
+#chat-form button {
+  background: #00ff99;
+  color: #181818;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#chat-form button:hover {
+  background: #00cc77;
+  color: #fff;
+}
+@media (max-width: 700px) {
+  .sala-container {
+    max-width: 98vw;
+    padding: 1rem 0.2rem;
+  }
+  #auth-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  #register-box, #login-box {
+    width: 100%;
+  }
+  #chat-section {
+    padding: 0.7rem 0.2rem;
+  }
+  #chat-messages {
+    height: 160px;
+  }
+}
+
+.btn-sala {
+  display: inline-block;
+  margin: 1.2rem auto 0 auto;
+  background: #00ff99;
+  color: #181818;
+  font-size: 1.15rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7em 2em;
+  box-shadow: 0 0 12px #00ff99aa;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+.btn-sala:hover {
+  background: #00cc77;
+  color: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 0 24px #00ff99cc;
+}
