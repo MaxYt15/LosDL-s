@@ -35,6 +35,12 @@ const escribiendoBox = document.getElementById('escribiendo-box');
 let escribiendoTimeout = null;
 let apodoActual = null;
 
+const VERIFICADOS = {
+  "K0PRXXhG4MeCWS9Gep5JpdxD0Nn2": true, // Sunkovv
+  "Djw6e2jIFhZmMUdyNgYloYecZOL2": true  // ByGaboDL
+};
+const VERIFICADO_ICON = `<span class="verificado-icon" title="Verificado"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#00f2ea"/><path d="M7 13l3 3 7-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+
 // --- Registro ---
 registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -93,7 +99,8 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
       apodoActual = apodoDoc.data().apodo;
-      userApodo.textContent = 'Apodo: ' + apodoActual;
+      // Mostrar verificado en cabecera si corresponde
+      userApodo.innerHTML = 'Apodo: ' + apodoActual + (VERIFICADOS[user.uid] ? VERIFICADO_ICON : '');
       authSection.style.display = 'none';
       verifySection.style.display = 'none';
       chatSection.style.display = 'block';
@@ -130,16 +137,25 @@ if (logoutBtnChat) {
 function cargarChat(apodo) {
   chatMessages.innerHTML = '';
   const mensajesQuery = query(collection(db, 'mensajes'), orderBy('timestamp', 'asc'));
-  onSnapshot(mensajesQuery, (snapshot) => {
+  onSnapshot(mensajesQuery, async (snapshot) => {
     chatMessages.innerHTML = '';
-    snapshot.forEach(doc => {
-      const data = doc.data();
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      // Buscar UID del apodo
+      let apodoVerificado = data.apodo;
+      let icono = '';
+      // Buscar UID por apodo
+      let uidVerificado = null;
+      // Consulta inversa: buscar UID por apodo
+      if (data.apodo === 'Sunkovv') uidVerificado = 'K0PRXXhG4MeCWS9Gep5JpdxD0Nn2';
+      if (data.apodo === 'ByGaboDL') uidVerificado = 'Djw6e2jIFhZmMUdyNgYloYecZOL2';
+      if (uidVerificado && VERIFICADOS[uidVerificado]) icono = VERIFICADO_ICON;
       const div = document.createElement('div');
       div.className = 'chat-msg';
-      div.innerHTML = `<b>${data.apodo}</b>: ${data.texto} <span class="chat-hora">${data.hora || ''}</span>`;
+      div.innerHTML = `<b>${apodoVerificado}${icono}</b>: ${data.texto} <span class="chat-hora">${data.hora || ''}</span>`;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
+    }
   });
 
   chatForm.onsubmit = async (e) => {

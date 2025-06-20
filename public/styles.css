@@ -485,3 +485,11 @@ footer {
   text-shadow: 0 0 6px #00ff99aa;
   transition: opacity 0.2s;
 }
+
+.verificado-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.25em;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 0 4px #00f2ea);
+}
