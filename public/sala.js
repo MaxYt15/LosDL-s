@@ -31,6 +31,9 @@ const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 const userApodo = document.getElementById('user-apodo');
 const logoutBtnChat = document.getElementById('logout-btn-chat');
+const escribiendoBox = document.getElementById('escribiendo-box');
+let escribiendoTimeout = null;
+let apodoActual = null;
 
 // --- Registro ---
 registerForm.addEventListener('submit', async (e) => {
@@ -89,16 +92,19 @@ onAuthStateChanged(auth, async (user) => {
         await signOut(auth);
         return;
       }
-      userApodo.textContent = 'Apodo: ' + apodoDoc.data().apodo;
+      apodoActual = apodoDoc.data().apodo;
+      userApodo.textContent = 'Apodo: ' + apodoActual;
       authSection.style.display = 'none';
       verifySection.style.display = 'none';
       chatSection.style.display = 'block';
-      cargarChat(apodoDoc.data().apodo);
+      cargarChat(apodoActual);
+      escucharEscribiendo(apodoActual);
     }
   } else {
     authSection.style.display = 'flex';
     verifySection.style.display = 'none';
     chatSection.style.display = 'none';
+    apodoActual = null;
   }
 });
 
@@ -149,4 +155,46 @@ function cargarChat(apodo) {
     });
     chatInput.value = '';
   };
-} 
+}
+
+// --- Escribiendo en tiempo real ---
+function escucharEscribiendo(miApodo) {
+  const escribiendoRef = doc(db, 'sala', 'escribiendo');
+  onSnapshot(escribiendoRef, (docSnap) => {
+    const data = docSnap.data();
+    if (data && data.apodo && data.apodo !== miApodo) {
+      escribiendoBox.textContent = `${data.apodo} está escribiendo...`;
+      escribiendoBox.style.opacity = 1;
+    } else {
+      escribiendoBox.textContent = '';
+      escribiendoBox.style.opacity = 0;
+    }
+  });
+}
+
+chatInput.addEventListener('input', () => {
+  if (!apodoActual) return;
+  const escribiendoRef = doc(db, 'sala', 'escribiendo');
+  setDoc(escribiendoRef, { apodo: apodoActual }, { merge: true });
+  if (escribiendoTimeout) clearTimeout(escribiendoTimeout);
+  escribiendoTimeout = setTimeout(() => {
+    setDoc(escribiendoRef, { apodo: '' }, { merge: true });
+  }, 1500);
+});
+
+chatForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const texto = chatInput.value.trim();
+  if (!texto) return;
+  const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  await addDoc(collection(db, 'mensajes'), {
+    apodo: apodoActual,
+    texto,
+    hora,
+    timestamp: serverTimestamp()
+  });
+  chatInput.value = '';
+  // Limpiar escribiendo
+  const escribiendoRef = doc(db, 'sala', 'escribiendo');
+  setDoc(escribiendoRef, { apodo: '' }, { merge: true });
+}; 
