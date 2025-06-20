@@ -1,0 +1,15 @@
+{
+  "name": "losdls-community",
+  "version": "1.0.0",
+  "description": "Comunidad LosDL'S creada por GaboDL",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase": "^11.9.1",
+    "node-fetch": "^2.6.7",
+    "puppeteer": "^24.10.2"
+  }
+}
