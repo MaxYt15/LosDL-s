@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, onAuthStateChanged, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, where, getDocs, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBDJ9Ouxup0-HQn_lC3HCkj5k3HnLp2ypI",
@@ -42,6 +42,8 @@ const VERIFICADOS = {
   "Djw6e2jIFhZmMUdyNgYloYecZOL2": true  // ByGaboDL
 };
 const VERIFICADO_ICON = `<span class="verificado-icon" title="Verificado"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#00f2ea"/><path d="M7 13l3 3 7-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 // --- Registro ---
 registerForm.addEventListener('submit', async (e) => {
@@ -135,7 +137,7 @@ if (logoutBtnChat) {
   logoutBtnChat.addEventListener('click', () => signOut(auth));
 }
 
-// --- Chat ---
+// --- Chat con reacciones tipo WhatsApp ---
 function cargarChat(apodo) {
   chatMessages.innerHTML = '';
   const mensajesQuery = query(collection(db, 'mensajes'), orderBy('timestamp', 'asc'));
@@ -143,18 +145,80 @@ function cargarChat(apodo) {
     chatMessages.innerHTML = '';
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
-      // Buscar UID del apodo
+      const mensajeId = docSnap.id;
       let apodoVerificado = data.apodo;
       let icono = '';
-      // Buscar UID por apodo
       let uidVerificado = null;
-      // Consulta inversa: buscar UID por apodo
       if (data.apodo === 'Sunkovv') uidVerificado = 'K0PRXXhG4MeCWS9Gep5JpdxD0Nn2';
       if (data.apodo === 'ByGaboDL') uidVerificado = 'Djw6e2jIFhZmMUdyNgYloYecZOL2';
       if (uidVerificado && VERIFICADOS[uidVerificado]) icono = VERIFICADO_ICON;
       const div = document.createElement('div');
       div.className = 'chat-msg';
-      div.innerHTML = `<b>${apodoVerificado}${icono}</b>: ${data.texto} <span class="chat-hora">${data.hora || ''}</span>`;
+      div.style.position = 'relative';
+      // Contenedor principal del mensaje (nombre y hora arriba, texto abajo)
+      const msgMain = document.createElement('div');
+      msgMain.className = 'msg-main';
+      // Header: apodo, verificado, hora
+      const msgHeader = document.createElement('div');
+      msgHeader.className = 'msg-header';
+      msgHeader.innerHTML = `<b>${apodoVerificado}${icono}</b><span class=\"chat-hora\">${data.hora || ''}</span>`;
+      // Texto del mensaje
+      const msgTexto = document.createElement('div');
+      msgTexto.className = 'msg-texto';
+      msgTexto.textContent = data.texto;
+      msgMain.appendChild(msgHeader);
+      msgMain.appendChild(msgTexto);
+      // Botón de reacción (icono Font Awesome carita feliz +)
+      const btnReaccion = document.createElement('button');
+      btnReaccion.className = 'reaccion-btn';
+      btnReaccion.title = 'Reaccionar';
+      btnReaccion.innerHTML = '<i class="fa-regular fa-face-smile"></i><span class="plus">+</span>';
+      btnReaccion.onclick = (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.emoji-menu').forEach(m => m.remove());
+        const menu = document.createElement('div');
+        menu.className = 'emoji-menu';
+        const picker = document.createElement('emoji-picker');
+        picker.addEventListener('emoji-click', async ev => {
+          const emoji = ev.detail.unicode;
+          const user = auth.currentUser;
+          if (!user) return;
+          const reaccionPath = `reacciones.${user.uid}`;
+          if (data.reacciones && data.reacciones[user.uid] && data.reacciones[user.uid].emoji === emoji) {
+            await updateDoc(doc(db, 'mensajes', mensajeId), {
+              [reaccionPath]: deleteField()
+            });
+          } else {
+            await updateDoc(doc(db, 'mensajes', mensajeId), {
+              [reaccionPath]: { emoji, uid: user.uid }
+            });
+          }
+          menu.remove();
+        });
+        menu.appendChild(picker);
+        // Posicionar el menú centrado respecto al mensaje
+        const rect = div.getBoundingClientRect();
+        menu.style.position = 'fixed';
+        const menuWidth = 340;
+        let top = rect.top - 350;
+        if (top < 0) top = rect.bottom + 10;
+        let left = rect.left + (rect.width / 2) - (menuWidth / 2);
+        if (left < 0) left = 10;
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.style.zIndex = 99999;
+        document.body.appendChild(menu);
+        setTimeout(() => {
+          document.addEventListener('mousedown', function handler(ev) {
+            if (!menu.contains(ev.target)) {
+              menu.remove();
+              document.removeEventListener('mousedown', handler);
+            }
+          });
+        }, 50);
+      };
+      div.appendChild(msgMain);
+      div.appendChild(btnReaccion);
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
