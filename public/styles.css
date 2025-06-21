@@ -725,33 +725,45 @@ footer {
 .action-buttons {
   display: flex;
   align-items: center;
-  flex-direction: column;
-  gap: 0.5em;
+  gap: 5px;
+  margin-left: auto;
 }
 
 #music-player-box {
-  width: 100%;
-  background: #222;
-  border-radius: 10px;
-  box-shadow: 0 0 8px #00ff9944;
-  padding: 1.1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  display: grid;
-  grid-template-areas:
-    "info controls"
-    "timer timer"
-    "form form";
-  grid-template-columns: 1fr auto;
-  gap: 0.8em 1em;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #00ff9977;
+  width: 95%;
+  max-width: 800px;
+  margin-top: 20px;
+  border: 1px solid #00ff99;
 }
+
+#current-song-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+#song-thumbnail {
+  width: 100px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #00ff99;
+  box-shadow: 0 0 10px #00ff99;
+}
+
 #player-info {
-  grid-area: info;
-  font-size: 0.95em;
-  color: #ccc;
+  flex-grow: 1;
 }
+
 #player-info b {
   color: #00ff99;
 }
+
 #player-controls {
   grid-area: controls;
   justify-self: end;
@@ -759,6 +771,7 @@ footer {
   display: flex;
   gap: 0.7em;
 }
+
 #player-controls #mute-btn, #player-controls #sync-btn, #player-controls #remove-song-btn {
   background: #181818cc;
   border: none;
@@ -769,10 +782,12 @@ footer {
   cursor: pointer;
   box-shadow: 0 0 6px #00ff9944;
 }
+
 #player-controls #remove-song-btn:hover {
   background: #ff4d4d;
   color: #fff;
 }
+
 #player-timer {
   grid-area: timer;
   font-size: 0.9em;
@@ -783,11 +798,13 @@ footer {
   background: #181818;
   border-radius: 12px;
 }
+
 #music-form {
   grid-area: form;
   display: flex;
   gap: 0.7em;
 }
+
 #music-form input {
   flex: 1;
   padding: 0.5em;
@@ -797,6 +814,7 @@ footer {
   color: #fff;
   font-size: 1em;
 }
+
 #music-form button {
   background: #00ff99;
   color: #181818;
@@ -806,11 +824,13 @@ footer {
   font-weight: bold;
   cursor: pointer;
 }
+
 #music-form button:disabled {
   background: #666;
   color: #ccc;
   cursor: not-allowed;
 }
+
 #music-form input:disabled {
   background: #333;
   color: #666;
@@ -835,6 +855,7 @@ footer {
   transition: opacity 0.4s, top 0.4s, visibility 0.4s;
   text-align: center;
 }
+
 #floating-alert.show {
   opacity: 1;
   top: 90px;

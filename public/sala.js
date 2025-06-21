@@ -53,6 +53,7 @@ const musicForm = document.getElementById('music-form');
 const youtubeLinkInput = document.getElementById('youtube-link-input');
 const currentSongEl = document.getElementById('current-song');
 const songRequesterEl = document.getElementById('song-requester');
+const songThumbnailEl = document.getElementById('song-thumbnail');
 const muteBtn = document.getElementById('mute-btn');
 const syncBtn = document.getElementById('sync-btn');
 let player;
@@ -96,6 +97,13 @@ async function syncPlayerState() {
         currentSongEl.textContent = data.title || videoId;
         songRequesterEl.textContent = data.requestedBy || 'Nadie';
         
+        if (data.thumbnailUrl) {
+            songThumbnailEl.src = data.thumbnailUrl;
+            songThumbnailEl.style.display = 'block';
+        } else {
+            songThumbnailEl.style.display = 'none';
+        }
+
         const startTime = data.startTime?.toDate();
         const elapsedTime = startTime ? (new Date().getTime() - startTime.getTime()) / 1000 : 0;
         player.loadVideoById(videoId, elapsedTime > 0 ? elapsedTime : 0);
@@ -106,6 +114,8 @@ async function syncPlayerState() {
         updateMusicFormState();
         currentSongEl.textContent = 'Ninguna';
         songRequesterEl.textContent = 'Nadie';
+        songThumbnailEl.style.display = 'none';
+        songThumbnailEl.src = '';
         clearInterval(timeUpdaterInterval);
         document.getElementById('current-time').textContent = '0:00';
         document.getElementById('total-time').textContent = '0:00';
@@ -211,11 +221,13 @@ musicForm.addEventListener('submit', async (e) => {
     const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
     const data = await response.json();
     const title = data.title || videoId;
+    const thumbnailUrl = data.thumbnail_url || '';
     
     const musicRef = doc(db, 'sala', 'music');
     await setDoc(musicRef, {
       videoId: videoId,
       title: title,
+      thumbnailUrl: thumbnailUrl,
       requestedBy: apodoActual,
       requesterUID: currentUserUID,
       startTime: serverTimestamp()
@@ -515,6 +527,19 @@ function cargarChat(apodo) {
     chatInput.value = '';
     currentReply = null;
     replyPreviewBox.style.display = 'none';
+    
+    // --- Lógica para limitar mensajes (cliente) ---
+    const MENSAJES_MAXIMOS = 200;
+    const mensajesRef = collection(db, 'mensajes');
+    const q = query(mensajesRef, orderBy('timestamp', 'asc')); // Ordenamos por el más antiguo primero
+
+    getDocs(q).then(snapshot => {
+        if (snapshot.size > MENSAJES_MAXIMOS) {
+            const mensajeABorrar = snapshot.docs[0]; // El primer documento es el más antiguo
+            deleteDoc(mensajeABorrar.ref);
+        }
+    });
+
     // Limpiar escribiendo
     const escribiendoRef = doc(db, 'sala', 'escribiendo');
     setDoc(escribiendoRef, { apodo: '' }, { merge: true });
