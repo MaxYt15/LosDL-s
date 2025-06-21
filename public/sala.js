@@ -172,10 +172,13 @@ function cargarChat(apodo) {
         };
         msgMain.appendChild(quotedReply);
       }
+      // Convertir timestamp a hora local del usuario
+      const fecha = data.timestamp ? data.timestamp.toDate() : new Date();
+      const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       // Header: apodo, verificado, hora
       const msgHeader = document.createElement('div');
       msgHeader.className = 'msg-header';
-      msgHeader.innerHTML = `<b>${apodoVerificado}${icono}</b><span class=\"chat-hora\">${data.hora || ''}</span>`;
+      msgHeader.innerHTML = `<b>${apodoVerificado}${icono}</b><span class="chat-hora">${hora}</span>`;
       // Texto del mensaje
       const msgTexto = document.createElement('div');
       msgTexto.className = 'msg-texto';
@@ -282,11 +285,9 @@ function cargarChat(apodo) {
     e.preventDefault();
     const texto = chatInput.value.trim();
     if (!texto) return;
-    const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const nuevoMensaje = {
       apodo: apodoActual,
       texto,
-      hora,
       timestamp: serverTimestamp()
     };
     if (currentReply) {
