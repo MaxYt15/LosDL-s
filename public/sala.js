@@ -53,6 +53,7 @@ const youtubeLinkInput = document.getElementById('youtube-link-input');
 const currentSongEl = document.getElementById('current-song');
 const songRequesterEl = document.getElementById('song-requester');
 const muteBtn = document.getElementById('mute-btn');
+const syncBtn = document.getElementById('sync-btn');
 let player;
 let isMuted = false;
 let isPlaying = false;
@@ -65,6 +66,44 @@ function showFloatingAlert(message) {
     setTimeout(() => {
         floatingAlert.classList.remove('show');
     }, 4000);
+}
+
+// Función central para sincronizar el estado del reproductor con Firestore
+async function syncPlayerState() {
+    if (!player || typeof player.loadVideoById !== 'function') {
+        // El reproductor no está listo aún, lo reintentamos en un momento
+        setTimeout(syncPlayerState, 100);
+        return;
+    }
+    
+    const musicRef = doc(db, 'sala', 'music');
+    const docSnap = await getDoc(musicRef);
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const videoId = data.videoId;
+        
+        isPlaying = true;
+        updateMusicFormState();
+        currentSongEl.textContent = data.title || videoId;
+        songRequesterEl.textContent = data.requestedBy || 'Nadie';
+        
+        const startTime = data.startTime?.toDate();
+        const elapsedTime = startTime ? (new Date().getTime() - startTime.getTime()) / 1000 : 0;
+        player.loadVideoById(videoId, elapsedTime > 0 ? elapsedTime : 0);
+
+    } else {
+        isPlaying = false;
+        updateMusicFormState();
+        currentSongEl.textContent = 'Ninguna';
+        songRequesterEl.textContent = 'Nadie';
+        clearInterval(timeUpdaterInterval);
+        document.getElementById('current-time').textContent = '0:00';
+        document.getElementById('total-time').textContent = '0:00';
+        if (player.getPlayerState() && player.getPlayerState() !== 0) {
+             player.stopVideo();
+        }
+    }
 }
 
 // Cargar YouTube IFrame API
@@ -85,42 +124,23 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 function onPlayerReady() {
-  // Sincronizar con Firestore
+  syncPlayerState();
+  
   const musicRef = doc(db, 'sala', 'music');
   onSnapshot(musicRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const videoId = data.videoId;
+    const currentVideoId = player.getVideoData() ? player.getVideoData().video_id : null;
+    const firestoreVideoId = docSnap.exists() ? docSnap.data().videoId : null;
 
-      if (player.getVideoData().video_id !== videoId) {
-        const startTime = data.startTime?.toDate();
-        const serverTimeOffset = (new Date()).getTime() - (data.serverTimestamp?.toDate().getTime() || 0);
-        const elapsedTime = (new Date().getTime() - startTime.getTime() - serverTimeOffset) / 1000;
-        player.loadVideoById(videoId, elapsedTime > 0 ? elapsedTime : 0);
-      }
-      currentSongEl.textContent = data.title || videoId;
-      songRequesterEl.textContent = data.requestedBy || 'Nadie';
-    } else {
-      // No hay música reproduciéndose
-      isPlaying = false;
-      currentSongEl.textContent = 'Ninguna';
-      songRequesterEl.textContent = 'Nadie';
-      updateMusicFormState();
-      clearInterval(timeUpdaterInterval);
-      document.getElementById('current-time').textContent = '0:00';
-      document.getElementById('total-time').textContent = '0:00';
-      if (player && typeof player.stopVideo === 'function') {
-        player.stopVideo();
-      }
+    if (currentVideoId !== firestoreVideoId) {
+        syncPlayerState();
     }
   });
 }
 
 function onPlayerStateChange(event) {
-  // YT.PlayerState.PLAYING = 1
-  if (event.data === 1) {
+  if (event.data === 1) { // PLAYING
     const duration = player.getDuration();
-    if (duration > 600) { // Límite de 10 minutos (600 segundos)
+    if (duration > 600) {
         showFloatingAlert("La música no puede durar más de 10 minutos.");
         const musicRef = doc(db, 'sala', 'music');
         getDoc(musicRef).then(docSnap => {
@@ -130,33 +150,23 @@ function onPlayerStateChange(event) {
         });
         return;
     }
-
-    isPlaying = true;
-    updateMusicFormState();
+    
     document.getElementById('total-time').textContent = formatTime(duration);
-
     clearInterval(timeUpdaterInterval);
     timeUpdaterInterval = setInterval(() => {
       const currentTime = player.getCurrentTime();
       document.getElementById('current-time').textContent = formatTime(currentTime);
     }, 1000);
-  } 
-  // YT.PlayerState.ENDED = 0
-  else if (event.data === 0) {
-    isPlaying = false;
-    updateMusicFormState();
+
+  } else if (event.data === 0) { // ENDED
     clearInterval(timeUpdaterInterval);
-    
-    // Solo un cliente (el primero que detecte el fin) borra el doc
     const musicRef = doc(db, 'sala', 'music');
     getDoc(musicRef).then(docSnap => {
-      if (docSnap.exists()) {
+      if (docSnap.exists() && docSnap.data().videoId === player.getVideoData().video_id) {
         deleteDoc(musicRef);
       }
     });
-  }
-  // YT.PlayerState.PAUSED = 2
-  else if (event.data === 2) {
+  } else if (event.data === 2) { // PAUSED
     clearInterval(timeUpdaterInterval);
   }
 }
@@ -178,11 +188,9 @@ function updateMusicFormState() {
   }
 }
 
-// Poner música
 musicForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!apodoActual || isPlaying) return;
-  
   const url = youtubeLinkInput.value;
   const videoId = extractVideoID(url);
   if (!videoId) {
@@ -190,7 +198,6 @@ musicForm.addEventListener('submit', async (e) => {
     return;
   }
   
-  // Obtener el título del video
   try {
     const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
     const data = await response.json();
@@ -201,10 +208,8 @@ musicForm.addEventListener('submit', async (e) => {
       videoId: videoId,
       title: title,
       requestedBy: apodoActual,
-      startTime: serverTimestamp(),
-      serverTimestamp: serverTimestamp()
+      startTime: serverTimestamp()
     });
-    
     youtubeLinkInput.value = '';
   } catch (error) {
     console.error("Error fetching video info:", error);
@@ -212,7 +217,6 @@ musicForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Controles de audio
 muteBtn.addEventListener('click', () => {
   if (isMuted) {
     player.unMute();
@@ -224,7 +228,8 @@ muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
 });
 
-// Extraer ID de video de YouTube
+syncBtn.addEventListener('click', syncPlayerState);
+
 function extractVideoID(url) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);

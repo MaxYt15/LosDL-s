@@ -756,8 +756,10 @@ footer {
   grid-area: controls;
   justify-self: end;
   align-self: start;
+  display: flex;
+  gap: 0.7em;
 }
-#player-controls #mute-btn {
+#player-controls #mute-btn, #player-controls #sync-btn {
   background: #181818cc;
   border: none;
   border-radius: 50%;
