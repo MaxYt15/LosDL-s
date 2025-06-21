@@ -759,7 +759,7 @@ footer {
   display: flex;
   gap: 0.7em;
 }
-#player-controls #mute-btn, #player-controls #sync-btn {
+#player-controls #mute-btn, #player-controls #sync-btn, #player-controls #remove-song-btn {
   background: #181818cc;
   border: none;
   border-radius: 50%;
@@ -768,6 +768,10 @@ footer {
   padding: 0.4em 0.5em;
   cursor: pointer;
   box-shadow: 0 0 6px #00ff9944;
+}
+#player-controls #remove-song-btn:hover {
+  background: #ff4d4d;
+  color: #fff;
 }
 #player-timer {
   grid-area: timer;

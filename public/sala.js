@@ -38,6 +38,7 @@ const replyPreviewBox = document.getElementById('reply-preview-box');
 let escribiendoTimeout = null;
 let apodoActual = null;
 let currentReply = null;
+let currentUserUID = null;
 
 const VERIFICADOS = {
   "K0PRXXhG4MeCWS9Gep5JpdxD0Nn2": true, // Sunkovv
@@ -83,6 +84,13 @@ async function syncPlayerState() {
         const data = docSnap.data();
         const videoId = data.videoId;
         
+        // Lógica para mostrar/ocultar el botón de quitar música
+        if (data.requesterUID && data.requesterUID === currentUserUID) {
+            document.getElementById('remove-song-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('remove-song-btn').style.display = 'none';
+        }
+
         isPlaying = true;
         updateMusicFormState();
         currentSongEl.textContent = data.title || videoId;
@@ -93,6 +101,7 @@ async function syncPlayerState() {
         player.loadVideoById(videoId, elapsedTime > 0 ? elapsedTime : 0);
 
     } else {
+        document.getElementById('remove-song-btn').style.display = 'none';
         isPlaying = false;
         updateMusicFormState();
         currentSongEl.textContent = 'Ninguna';
@@ -208,6 +217,7 @@ musicForm.addEventListener('submit', async (e) => {
       videoId: videoId,
       title: title,
       requestedBy: apodoActual,
+      requesterUID: currentUserUID,
       startTime: serverTimestamp()
     });
     youtubeLinkInput.value = '';
@@ -229,6 +239,11 @@ muteBtn.addEventListener('click', () => {
 });
 
 syncBtn.addEventListener('click', syncPlayerState);
+
+document.getElementById('remove-song-btn').addEventListener('click', () => {
+    const musicRef = doc(db, 'sala', 'music');
+    deleteDoc(musicRef);
+});
 
 function extractVideoID(url) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -297,6 +312,7 @@ onAuthStateChanged(auth, async (user) => {
       authSection.style.display = 'none';
       verifySection.style.display = 'block';
       chatSection.style.display = 'none';
+      currentUserUID = null;
     } else {
       // Obtener apodo
       const apodoDoc = await getDoc(doc(db, 'apodos', user.uid));
@@ -304,6 +320,7 @@ onAuthStateChanged(auth, async (user) => {
         await signOut(auth);
         return;
       }
+      currentUserUID = user.uid;
       apodoActual = apodoDoc.data().apodo;
       // Mostrar verificado en cabecera si corresponde
       userApodo.innerHTML = 'Apodo: ' + apodoActual + (VERIFICADOS[user.uid] ? VERIFICADO_ICON : '');
@@ -318,6 +335,7 @@ onAuthStateChanged(auth, async (user) => {
     verifySection.style.display = 'none';
     chatSection.style.display = 'none';
     apodoActual = null;
+    currentUserUID = null;
   }
 });
 
