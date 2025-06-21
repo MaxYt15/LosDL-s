@@ -728,3 +728,109 @@ footer {
   flex-direction: column;
   gap: 0.5em;
 }
+
+#music-player-box {
+  width: 100%;
+  background: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  padding: 1.1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-areas:
+    "info controls"
+    "timer timer"
+    "form form";
+  grid-template-columns: 1fr auto;
+  gap: 0.8em 1em;
+}
+#player-info {
+  grid-area: info;
+  font-size: 0.95em;
+  color: #ccc;
+}
+#player-info b {
+  color: #00ff99;
+}
+#player-controls {
+  grid-area: controls;
+  justify-self: end;
+  align-self: start;
+}
+#player-controls #mute-btn {
+  background: #181818cc;
+  border: none;
+  border-radius: 50%;
+  color: #00ff99;
+  font-size: 1.2em;
+  padding: 0.4em 0.5em;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00ff9944;
+}
+#player-timer {
+  grid-area: timer;
+  font-size: 0.9em;
+  color: #aaa;
+  justify-self: center;
+  margin-top: -0.5em;
+  padding: 0.2em 0.8em;
+  background: #181818;
+  border-radius: 12px;
+}
+#music-form {
+  grid-area: form;
+  display: flex;
+  gap: 0.7em;
+}
+#music-form input {
+  flex: 1;
+  padding: 0.5em;
+  border-radius: 6px;
+  border: 1px solid #00ff99;
+  background: #181818;
+  color: #fff;
+  font-size: 1em;
+}
+#music-form button {
+  background: #00ff99;
+  color: #181818;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  font-weight: bold;
+  cursor: pointer;
+}
+#music-form button:disabled {
+  background: #666;
+  color: #ccc;
+  cursor: not-allowed;
+}
+#music-form input:disabled {
+  background: #333;
+  color: #666;
+  border-color: #666;
+  cursor: not-allowed;
+}
+
+#floating-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4d4d;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px #00000055;
+  z-index: 100000;
+  font-weight: bold;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s, top 0.4s, visibility 0.4s;
+  text-align: center;
+}
+#floating-alert.show {
+  opacity: 1;
+  top: 90px;
+  visibility: visible;
+}

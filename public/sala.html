@@ -9,12 +9,34 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+  <div id="floating-alert"></div>
+
   <div class="sala-container">
     <h1>Sala LosDL'S</h1>
     <div id="usuarios-registrados-box">
       <span id="usuarios-registrados-titulo">Usuarios registrados: <b id="usuarios-registrados-cantidad">0</b></span>
       <div id="usuarios-registrados-lista"></div>
     </div>
+
+    <div id="music-player-box">
+      <div id="player-info">
+        <b>Reproduciendo ahora:</b> <span id="current-song">Ninguna</span>
+        <br>
+        <b>Puesta por:</b> <span id="song-requester">Nadie</span>
+      </div>
+      <div id="player-controls">
+        <button id="mute-btn" title="Silenciar/Reanudar"><i class="fas fa-volume-up"></i></button>
+      </div>
+      <div id="player-timer">
+        <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
+      </div>
+      <form id="music-form">
+        <input type="text" id="youtube-link-input" placeholder="Pega un link de YouTube aquí..." required />
+        <button type="submit">Poner Música</button>
+      </form>
+      <div id="youtube-player" style="display:none;"></div>
+    </div>
+
     <div id="auth-section">
       <div id="register-box">
         <h2>Registrarse</h2>
