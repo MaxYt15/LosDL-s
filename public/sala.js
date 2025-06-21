@@ -56,6 +56,8 @@ const songRequesterEl = document.getElementById('song-requester');
 const songThumbnailEl = document.getElementById('song-thumbnail');
 const muteBtn = document.getElementById('mute-btn');
 const syncBtn = document.getElementById('sync-btn');
+const youtubePlayerContainer = document.getElementById('youtube-player-container');
+const currentSongContainer = document.getElementById('current-song-container');
 let player;
 let isMuted = false;
 let isPlaying = false;
@@ -71,20 +73,34 @@ function showFloatingAlert(message) {
 }
 
 // Función central para sincronizar el estado del reproductor con Firestore
-async function syncPlayerState() {
+async function syncPlayerState(docSnap) {
     if (!player || typeof player.loadVideoById !== 'function') {
         // El reproductor no está listo aún, lo reintentamos en un momento
-        setTimeout(syncPlayerState, 100);
+        setTimeout(() => syncPlayerState(docSnap), 100);
         return;
     }
-    
-    const musicRef = doc(db, 'sala', 'music');
-    const docSnap = await getDoc(musicRef);
 
+    // Si no nos pasan un docSnap (sync manual o de onReady), lo obtenemos
+    if (!docSnap) {
+        const musicRef = doc(db, 'sala', 'music');
+        docSnap = await getDoc(musicRef);
+    }
+    
     if (docSnap.exists()) {
         const data = docSnap.data();
         const videoId = data.videoId;
-        
+        const type = data.type || 'music'; // 'music' es el default por compatibilidad
+
+        if (type === 'video') {
+            currentSongContainer.style.display = 'none';
+            youtubePlayerContainer.style.display = 'block';
+            player.setSize('100%', '100%'); 
+        } else { // Es música
+            youtubePlayerContainer.style.display = 'none';
+            currentSongContainer.style.display = 'flex'; // Usamos flex por el estilo del thumbnail
+            player.setSize(0, 0); 
+        }
+
         // Lógica para mostrar/ocultar el botón de quitar música
         if (data.requesterUID && data.requesterUID === currentUserUID) {
             document.getElementById('remove-song-btn').style.display = 'inline-block';
@@ -112,6 +128,10 @@ async function syncPlayerState() {
         document.getElementById('remove-song-btn').style.display = 'none';
         isPlaying = false;
         updateMusicFormState();
+        
+        youtubePlayerContainer.style.display = 'none';
+        currentSongContainer.style.display = 'flex';
+
         currentSongEl.textContent = 'Ninguna';
         songRequesterEl.textContent = 'Nadie';
         songThumbnailEl.style.display = 'none';
@@ -133,8 +153,13 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 window.onYouTubeIframeAPIReady = function() {
   player = new YT.Player('youtube-player', {
-    height: '0',
-    width: '0',
+    height: '100%',
+    width: '100%',
+    playerVars: {
+        'playsinline': 1,
+        'autoplay': 1,
+        'controls': 1
+    },
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
@@ -147,11 +172,13 @@ function onPlayerReady() {
   
   const musicRef = doc(db, 'sala', 'music');
   onSnapshot(musicRef, (docSnap) => {
-    const currentVideoId = player.getVideoData() ? player.getVideoData().video_id : null;
     const firestoreVideoId = docSnap.exists() ? docSnap.data().videoId : null;
+    const playerVideoData = player && typeof player.getVideoData === 'function' ? player.getVideoData() : null;
+    const currentVideoId = playerVideoData ? playerVideoData.video_id : null;
 
+    // Sincronizamos si el video es diferente o si no hay nada en Firestore (para limpiar)
     if (currentVideoId !== firestoreVideoId) {
-        syncPlayerState();
+        syncPlayerState(docSnap);
     }
   });
 }
@@ -160,7 +187,7 @@ function onPlayerStateChange(event) {
   if (event.data === 1) { // PLAYING
     const duration = player.getDuration();
     if (duration > 600) {
-        showFloatingAlert("La música no puede durar más de 10 minutos.");
+        showFloatingAlert("El contenido no puede durar más de 10 minutos.");
         const musicRef = doc(db, 'sala', 'music');
         getDoc(musicRef).then(docSnap => {
           if (docSnap.exists() && docSnap.data().videoId === player.getVideoData().video_id) {
@@ -191,35 +218,43 @@ function onPlayerStateChange(event) {
 }
 
 function updateMusicFormState() {
-  const submitBtn = musicForm.querySelector('button[type="submit"]');
+  const musicSubmitBtn = document.getElementById('music-submit-btn');
+  const videoSubmitBtn = document.getElementById('video-submit-btn');
   const input = musicForm.querySelector('input');
   
   if (isPlaying) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Espera a que termine la música';
-    input.placeholder = 'No puedes poner música ahora...';
+    musicSubmitBtn.disabled = true;
+    videoSubmitBtn.disabled = true;
+    musicSubmitBtn.textContent = 'Espera a que termine';
+    videoSubmitBtn.textContent = 'Espera a que termine';
+    input.placeholder = 'No puedes poner nada ahora...';
     input.disabled = true;
   } else {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Poner Música';
+    musicSubmitBtn.disabled = false;
+    videoSubmitBtn.disabled = false;
+    musicSubmitBtn.textContent = 'Poner Música';
+    videoSubmitBtn.textContent = 'Poner Video';
     input.placeholder = 'Pega un link de YouTube aquí...';
     input.disabled = false;
   }
 }
 
-musicForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+async function addMedia(type) {
   if (!apodoActual || isPlaying) return;
   const url = youtubeLinkInput.value;
   const videoId = extractVideoID(url);
   if (!videoId) {
-    alert('Link de YouTube no válido.');
+    showFloatingAlert('Link de YouTube no válido.');
     return;
   }
   
   try {
     const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
     const data = await response.json();
+    if (data.error) {
+        showFloatingAlert('No se pudo encontrar el video.');
+        return;
+    }
     const title = data.title || videoId;
     const thumbnailUrl = data.thumbnail_url || '';
     
@@ -230,13 +265,27 @@ musicForm.addEventListener('submit', async (e) => {
       thumbnailUrl: thumbnailUrl,
       requestedBy: apodoActual,
       requesterUID: currentUserUID,
-      startTime: serverTimestamp()
+      startTime: serverTimestamp(),
+      type: type // 'music' o 'video'
     });
     youtubeLinkInput.value = '';
   } catch (error) {
     console.error("Error fetching video info:", error);
-    alert('Error al obtener información del video. Intenta de nuevo.');
+    showFloatingAlert('Error al obtener información del video.');
   }
+}
+
+musicForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addMedia('music');
+});
+
+document.getElementById('video-submit-btn').addEventListener('click', () => {
+    addMedia('video');
+});
+
+syncBtn.addEventListener('click', () => {
+    syncPlayerState();
 });
 
 muteBtn.addEventListener('click', () => {
@@ -249,8 +298,6 @@ muteBtn.addEventListener('click', () => {
   }
   isMuted = !isMuted;
 });
-
-syncBtn.addEventListener('click', syncPlayerState);
 
 document.getElementById('remove-song-btn').addEventListener('click', () => {
     const musicRef = doc(db, 'sala', 'music');

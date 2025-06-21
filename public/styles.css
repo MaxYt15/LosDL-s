@@ -740,11 +740,18 @@ footer {
   border: 1px solid #00ff99;
 }
 
+#youtube-player-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+}
+
 #current-song-container {
   display: flex;
   align-items: center;
   gap: 15px;
   margin-bottom: 10px;
+  flex-grow: 1;
 }
 
 #song-thumbnail {
@@ -817,18 +824,23 @@ footer {
 
 #music-form button {
   background: #00ff99;
-  color: #181818;
+  color: #121212;
   border: none;
-  border-radius: 6px;
-  padding: 0.5em 1em;
+  padding: 0.7em 1em;
+  border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#music-form button:hover {
+  background-color: #33ffbb;
+  transform: scale(1.05);
 }
 
 #music-form button:disabled {
   background: #666;
   color: #ccc;
-  cursor: not-allowed;
 }
 
 #music-form input:disabled {

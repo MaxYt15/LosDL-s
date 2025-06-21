@@ -18,9 +18,12 @@
       <div id="usuarios-registrados-lista"></div>
     </div>
 
-    <div id="music-player-box">
+    <div id="media-player-box">
+      <div id="youtube-player-container" style="display: none;">
+        <div id="youtube-player"></div>
+      </div>
       <div id="current-song-container">
-        <img id="song-thumbnail" src="" alt="Miniatura de la canción" style="display: none;"/>
+        <img id="song-thumbnail" src="" alt="Miniatura de la canción" style="display: none;">
         <div id="player-info">
           <b>Reproduciendo ahora:</b> <span id="current-song">Ninguna</span>
           <br>
@@ -36,10 +39,10 @@
         <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
       </div>
       <form id="music-form">
-        <input type="text" id="youtube-link-input" placeholder="Pega un link de YouTube aquí..." required />
-        <button type="submit">Poner Música</button>
+        <input type="text" id="youtube-link-input" placeholder="Pega un link de YouTube aquí..." required="">
+        <button type="submit" id="music-submit-btn">Poner Música</button>
+        <button type="button" id="video-submit-btn">Poner Video</button>
       </form>
-      <div id="youtube-player" style="display:none;"></div>
     </div>
 
     <div id="auth-section">
