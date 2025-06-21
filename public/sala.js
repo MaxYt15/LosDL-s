@@ -158,7 +158,11 @@ window.onYouTubeIframeAPIReady = function() {
     playerVars: {
         'playsinline': 1,
         'autoplay': 1,
-        'controls': 1
+        'controls': 0,
+        'disablekb': 1,
+        'modestbranding': 1,
+        'showinfo': 0,
+        'rel': 0
     },
     events: {
       'onReady': onPlayerReady,
@@ -172,14 +176,7 @@ function onPlayerReady() {
   
   const musicRef = doc(db, 'sala', 'music');
   onSnapshot(musicRef, (docSnap) => {
-    const firestoreVideoId = docSnap.exists() ? docSnap.data().videoId : null;
-    const playerVideoData = player && typeof player.getVideoData === 'function' ? player.getVideoData() : null;
-    const currentVideoId = playerVideoData ? playerVideoData.video_id : null;
-
-    // Sincronizamos si el video es diferente o si no hay nada en Firestore (para limpiar)
-    if (currentVideoId !== firestoreVideoId) {
-        syncPlayerState(docSnap);
-    }
+    syncPlayerState(docSnap);
   });
 }
 

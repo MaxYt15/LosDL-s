@@ -744,6 +744,7 @@ footer {
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: #000;
+  pointer-events: none;
 }
 
 #current-song-container {
