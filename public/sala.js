@@ -31,6 +31,7 @@ const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 const userApodo = document.getElementById('user-apodo');
 const logoutBtnChat = document.getElementById('logout-btn-chat');
+const adSupportLink = document.getElementById('ad-support-link');
 const escribiendoBox = document.getElementById('escribiendo-box');
 const usuariosRegistradosCantidad = document.getElementById('usuarios-registrados-cantidad');
 const usuariosRegistradosLista = document.getElementById('usuarios-registrados-lista');
@@ -274,12 +275,17 @@ async function addMedia(type) {
 
 musicForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    window.open('https://www.profitableratecpm.com/jny3jejk?key=647c9f116f9de87e4983ccb1adb9a58e', '_blank');
     addMedia('music');
 });
 
-document.getElementById('video-submit-btn').addEventListener('click', () => {
-    addMedia('video');
-});
+const videoSubmitBtn = document.getElementById('video-submit-btn');
+if (videoSubmitBtn) {
+    videoSubmitBtn.addEventListener('click', () => {
+        window.open('https://www.profitableratecpm.com/jny3jejk?key=647c9f116f9de87e4983ccb1adb9a58e', '_blank');
+        addMedia('video');
+    });
+}
 
 syncBtn.addEventListener('click', () => {
     syncPlayerState();
@@ -302,6 +308,7 @@ document.getElementById('remove-song-btn').addEventListener('click', () => {
 });
 
 function extractVideoID(url) {
+  let video_id = url.split('v=')[1];
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   if (match && match[2].length == 11) {
@@ -625,4 +632,10 @@ onSnapshot(apodosRef, (snapshot) => {
   });
   usuariosRegistradosCantidad.textContent = apodos.length;
   usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
-}); 
+});
+
+if (adSupportLink) {
+    adSupportLink.addEventListener('click', () => {
+        showFloatingAlert('Gracias por apoyarnos');
+    });
+} 

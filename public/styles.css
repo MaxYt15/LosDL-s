@@ -870,7 +870,54 @@ footer {
 }
 
 #floating-alert.show {
+  transform: translateY(0);
   opacity: 1;
-  top: 90px;
-  visibility: visible;
+}
+
+.btn-sala-secondary {
+    background-color: #00ff99;
+    color: #121212;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+    font-size: 0.9em;
+    margin-left: 10px;
+    animation: call-to-action-pulse 2s infinite;
+}
+
+.btn-sala-secondary:hover {
+    background-color: #00e68a;
+    transform: scale(1.1);
+    animation: none;
+}
+
+@keyframes call-to-action-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px #00ff99;
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #00ff99, 0 0 25px #00ff99aa;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 4px #00ff99;
+  }
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #1e1e1e;
+    border-bottom: 2px solid #00ff99;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
