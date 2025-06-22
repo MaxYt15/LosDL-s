@@ -392,6 +392,7 @@ onAuthStateChanged(auth, async (user) => {
       chatSection.style.display = 'block';
       cargarChat(apodoActual);
       escucharEscribiendo(apodoActual);
+      mostrarUsuariosRegistrados();
     }
   } else {
     authSection.style.display = 'flex';
@@ -399,6 +400,7 @@ onAuthStateChanged(auth, async (user) => {
     chatSection.style.display = 'none';
     apodoActual = null;
     currentUserUID = null;
+    mostrarUsuariosRegistrados();
   }
 });
 
@@ -622,17 +624,22 @@ chatInput.addEventListener('input', () => {
   }, 1500);
 });
 
-// Mostrar usuarios registrados y apodos en tiempo real
-const apodosRef = collection(db, 'apodos');
-onSnapshot(apodosRef, (snapshot) => {
-  const apodos = [];
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    apodos.push({ apodo: data.apodo, uid: data.uid });
-  });
-  usuariosRegistradosCantidad.textContent = apodos.length;
-  usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
-});
+// Renaming the function to be more explicit
+function mostrarUsuariosRegistrados() {
+    const apodosRef = collection(db, 'apodos');
+    onSnapshot(apodosRef, (snapshot) => {
+      const apodos = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        apodos.push({ apodo: data.apodo, uid: data.uid });
+      });
+      usuariosRegistradosCantidad.textContent = apodos.length;
+      usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
+    });
+}
+
+// Initial call for logged-out users
+mostrarUsuariosRegistrados();
 
 if (adSupportLink) {
     adSupportLink.addEventListener('click', () => {

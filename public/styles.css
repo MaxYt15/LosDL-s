@@ -536,37 +536,52 @@ footer {
 
 #usuarios-registrados-box {
   width: 100%;
-  background: #222;
-  border-radius: 10px;
-  box-shadow: 0 0 8px #00ff9944;
-  padding: 1.1rem 1.5rem 0.7rem 1.5rem;
-  margin-bottom: 1.5rem;
+  background: #1e1e1e;
+  border: 1px solid rgba(0, 255, 153, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 255, 153, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
 }
+
 #usuarios-registrados-titulo {
   color: #00ff99;
-  font-size: 1.1em;
+  font-size: 1.2rem;
   font-weight: bold;
+  margin-bottom: 1.5rem;
+  display: block;
 }
+
 #usuarios-registrados-lista {
-  margin-top: 0.7em;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7em 1.2em;
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
   justify-content: center;
-  color: #fff;
-  font-size: 1em;
 }
+
 #usuarios-registrados-lista .apodo-lista {
-  background: #181818;
-  border-radius: 6px;
-  padding: 0.2em 0.8em;
-  box-shadow: 0 0 4px #00ff9922;
+  background: linear-gradient(145deg, #2a2a2a, #202020);
+  border-radius: 8px;
+  padding: 0.6em 0.8em;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   color: #00ff99;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.2em;
+  justify-content: center;
+  gap: 0.5em;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#usuarios-registrados-lista .apodo-lista:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 255, 153, 0.15);
 }
 
 /* Reacciones a mensajes */
