@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confesiones - LosDL'S</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="images/losDLs-logo.png" />
+</head>
+<body>
+  <div id="floating-alert"></div>
+  <div class="confesiones-container">
+    <h1>Confesiones Anónimas</h1>
+    <p class="subtitle">Tu confesión es 100% anónima y se borrará en 24 horas.</p>
+    <form id="confesion-form">
+      <textarea id="confesion-input" placeholder="Escribe aquí tu confesión..." maxlength="500" required></textarea>
+      <div class="char-counter">
+        <span id="char-count">0</span> / 500
+      </div>
+      <button type="submit">Enviar Confesión</button>
+    </form>
+    <div class="confesiones-nav">
+        <a href="ver_confesiones.html" class="btn-confesiones">Ver Confesiones</a>
+        <a href="sala.html" class="btn-confesiones secondary">Volver a la Sala</a>
+    </div>
+  </div>
+
+  <div id="success-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon-container">
+        <svg class="modal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="modal-icon-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="modal-icon-checkmark" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <h2>¡Éxito!</h2>
+      <p>Tu confesión anónima fue publicada.</p>
+    </div>
+  </div>
+
+  <script type="module" src="confesiones.js"></script>
+</body>
+</html> 
