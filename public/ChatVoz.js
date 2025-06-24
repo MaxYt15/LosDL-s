@@ -467,3 +467,4 @@ function detectarHablaRemoto(peerId, stream) {
   }
   checkVolume();
 }
+ 

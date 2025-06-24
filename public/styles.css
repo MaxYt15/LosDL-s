@@ -1408,3 +1408,97 @@ footer {
   from { filter: drop-shadow(0 0 8px #00ff99); }
   to   { filter: drop-shadow(0 0 28px #00ff99); }
 }
+
+/* --- ESTILOS BUSCADOR YOUTUBE --- */
+#youtube-search-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+}
+#youtube-query-input {
+  background: #181818;
+  color: #e0e0e0;
+  border: 1.5px solid #00ff99;
+  border-radius: 8px;
+  padding: 0.7em 1em;
+  font-size: 1em;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 320px;
+  margin-right: 8px;
+  box-shadow: 0 0 8px #00ff9955;
+}
+#youtube-query-input:focus {
+  border: 2px solid #00ff99;
+  box-shadow: 0 0 12px #00ff99aa;
+}
+#youtube-search-btn {
+  background: #00ff99;
+  color: #181818;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7em 1.5em;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 0;
+  margin-top: 6px;
+  box-shadow: 0 0 8px #00ff99aa;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+#youtube-search-btn:hover {
+  background: #00e68a;
+  color: #121212;
+  transform: scale(1.04);
+}
+#youtube-results {
+  width: 100%;
+  max-width: 340px;
+  margin-top: 8px;
+}
+.youtube-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  background: #181818;
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px #00ff9922;
+  transition: background 0.2s;
+}
+.youtube-result-item:hover {
+  background: #222;
+}
+.youtube-result-thumb {
+  border-radius: 6px;
+  width: 60px;
+  height: 45px;
+}
+.youtube-result-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #00ff99;
+  font-weight: 500;
+  font-size: 1em;
+}
+.youtube-result-choose {
+  background: #00ff99;
+  color: #181818;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.youtube-result-choose:hover {
+  background: #00e68a;
+  color: #121212;
+  transform: scale(1.06);
+}

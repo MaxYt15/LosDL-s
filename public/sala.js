@@ -59,6 +59,9 @@ const muteBtn = document.getElementById('mute-btn');
 const syncBtn = document.getElementById('sync-btn');
 const youtubePlayerContainer = document.getElementById('youtube-player-container');
 const currentSongContainer = document.getElementById('current-song-container');
+const youtubeQueryInput = document.getElementById('youtube-query-input');
+const youtubeSearchBtn = document.getElementById('youtube-search-btn');
+const youtubeResultsDiv = document.getElementById('youtube-results');
 let player;
 let isMuted = false;
 let isPlaying = false;
@@ -144,6 +147,7 @@ async function syncPlayerState(docSnap) {
              player.stopVideo();
         }
     }
+    mostrarBuscadorYouTubeSiNoHayReproduccion();
 }
 
 // Cargar YouTube IFrame API
@@ -671,4 +675,118 @@ onSnapshotVoz(vozActivaRef, (snapshot) => {
   } else {
     voiceChatIndicator.innerHTML = `<span style="color:#00ff99;font-weight:bold;">En chat de voz:</span> <span style="color:#fff;">${usuarios.join(', ')}</span>`;
   }
-}); 
+});
+
+// NUEVO: Búsqueda de YouTube sin API key (scraping)
+async function buscarEnYouTubeSinAPI(query) {
+  youtubeResultsDiv.innerHTML = '<span style="color:#aaa">Buscando...</span>';
+  try {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+    const text = await res.text();
+    // Extrae los IDs de los videos usando regex
+    const matches = [...text.matchAll(/\"videoId\":\"(.*?)\"/g)];
+    const ids = [...new Set(matches.map(m => m[1]))].filter(id => id.length === 11).slice(0, 3); // 3 primeros únicos
+    if (ids.length === 0) {
+      youtubeResultsDiv.innerHTML = '<span style="color:#f66">No se encontraron resultados.</span>';
+      return;
+    }
+    // Obtener títulos y miniaturas usando noembed, con fallback seguro
+    const detalles = await Promise.all(ids.map(async id => {
+      try {
+        const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);
+        const data = await resp.json();
+        return {
+          id,
+          title: (data && data.title) ? data.title : id,
+          thumbnail: (data && data.thumbnail_url) ? data.thumbnail_url : `https://img.youtube.com/vi/${id}/default.jpg`
+        };
+      } catch {
+        return { id, title: id, thumbnail: `https://img.youtube.com/vi/${id}/default.jpg` };
+      }
+    }));
+    mostrarResultadosSinAPI(detalles);
+  } catch (e) {
+    youtubeResultsDiv.innerHTML = '<span style="color:#f66">Error al buscar en YouTube.</span>';
+  }
+}
+
+function mostrarResultadosSinAPI(videos) {
+  youtubeResultsDiv.innerHTML = '';
+  videos.forEach(video => {
+    youtubeResultsDiv.innerHTML += `
+      <div class="youtube-result-item">
+        <img class="youtube-result-thumb" src="${video.thumbnail}" alt="thumb">
+        <span class="youtube-result-title">${video.title}</span>
+        <button class="youtube-result-choose" onclick="window.elegirVideoYouTube('${video.id}','music')">Música</button>
+        <button class="youtube-result-choose" onclick="window.elegirVideoYouTube('${video.id}','video')">Video</button>
+      </div>
+    `;
+  });
+}
+
+// Hacer la función global para el botón Elegir
+window.elegirVideoYouTube = function(videoId, tipo) {
+  // Abrir anuncio en nueva pestaña
+  window.open('https://thongmilletbrutally.com/jny3jejk?key=647c9f116f9de87e4983ccb1adb9a58e', '_blank');
+  youtubeLinkInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+  // Forzar el evento input para que el valor se reconozca
+  const event = new Event('input', { bubbles: true });
+  youtubeLinkInput.dispatchEvent(event);
+  // Enfocar el input para mostrar el formulario y anuncios
+  youtubeLinkInput.focus();
+  setTimeout(() => {
+    if (tipo === 'video') {
+      if (typeof addMedia === 'function') {
+        addMedia('video');
+      } else {
+        document.getElementById('video-submit-btn').click();
+      }
+    } else {
+      if (typeof addMedia === 'function') {
+        addMedia('music');
+      } else {
+        document.getElementById('music-submit-btn').click();
+      }
+    }
+    youtubeResultsDiv.innerHTML = '';
+    youtubeQueryInput.value = '';
+    document.getElementById('youtube-search-box').style.display = 'none';
+  }, 100);
+}
+
+// Evento para el botón de búsqueda
+if (youtubeSearchBtn) {
+  youtubeSearchBtn.addEventListener('click', () => {
+    const q = youtubeQueryInput.value.trim();
+    if (q.length > 0) buscarEnYouTubeSinAPI(q);
+  });
+  youtubeQueryInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      youtubeSearchBtn.click();
+    }
+  });
+}
+
+// Mostrar el buscador si se borra la música o se quiere buscar de nuevo
+if (youtubeLinkInput) {
+  youtubeLinkInput.addEventListener('focus', () => {
+    document.getElementById('youtube-search-box').style.display = 'flex';
+  });
+}
+
+// Mostrar el buscador si se borra la música o video
+function mostrarBuscadorYouTubeSiNoHayReproduccion() {
+  // Si no hay nada reproduciéndose, mostrar el buscador
+  if (document.getElementById('current-song').textContent === 'Ninguna') {
+    document.getElementById('youtube-search-box').style.display = 'flex';
+  }
+}
+
+// Hook en syncPlayerState para mostrar el buscador cuando no hay nada
+const originalSyncPlayerState = syncPlayerState;
+syncPlayerState = async function(docSnap) {
+  await originalSyncPlayerState.apply(this, arguments);
+  mostrarBuscadorYouTubeSiNoHayReproduccion();
+} 
