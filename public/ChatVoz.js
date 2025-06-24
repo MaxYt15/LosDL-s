@@ -229,6 +229,9 @@ async function startMic(active) {
       micBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
       isMuted = true;
       await updateDoc(doc(usersCol, userId), { talking: false, mute: true });
+      // Aunque no tenga micro, puede escuchar a los demás
+      closeAllPeers();
+      callAllPeers();
     }
   } else {
     if (localStream) {
@@ -241,7 +244,9 @@ async function startMic(active) {
     statusDiv.textContent = "Micrófono desactivado.";
     isMuted = true;
     await updateDoc(doc(usersCol, userId), { talking: false, mute: true });
-    closeAllPeers(); // Cierra todos los peers y elimina audios remotos
+    // Aunque no tenga micro, puede escuchar a los demás
+    closeAllPeers();
+    callAllPeers();
   }
 }
 
@@ -260,12 +265,21 @@ async function callAllPeers() {
   users.forEach(async (docu) => {
     const peerId = docu.id;
     if (peerId === userId) return;
-    if (peerConnections[peerId]) return;
-    await createPeer(peerId, true);
+    // Permitir que todos (incluso muteados) reciban audio
+    if (!peerConnections[peerId]) {
+      await createPeer(peerId, true);
+    }
   });
 }
 
 async function createPeer(peerId, isInitiator) {
+  // Si ya existe, ciérralo y elimínalo para forzar reconexión limpia
+  if (peerConnections[peerId]) {
+    peerConnections[peerId].close();
+    delete peerConnections[peerId];
+    let audio = document.getElementById("audio-" + peerId);
+    if (audio) audio.remove();
+  }
   const pc = new RTCPeerConnection({
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" }
@@ -273,6 +287,14 @@ async function createPeer(peerId, isInitiator) {
   });
   peerConnections[peerId] = pc;
 
+  // Elimina tracks previos antes de agregar los nuevos
+  if (pc.getSenders) {
+    pc.getSenders().forEach(sender => {
+      try { pc.removeTrack(sender); } catch {}
+    });
+  }
+
+  // Siempre agrega los tracks del localStream si existe
   if (localStream) {
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
   }
