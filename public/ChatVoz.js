@@ -112,8 +112,13 @@ let usuariosPrevios = new Set();
 function listenUsers() {
   onSnapshot(usersCol, (snapshot) => {
     const nuevos = new Set();
+    let usuariosActivos = [];
     snapshot.forEach(docu => {
       nuevos.add(docu.id);
+      const data = docu.data();
+      if (!data.mute && data.talking) {
+        usuariosActivos.push(docu.id);
+      }
     });
     // Detectar nuevos usuarios (excepto tú mismo)
     if (usuariosPrevios.size > 0) {
@@ -150,6 +155,24 @@ function listenUsers() {
         <i class='fas fa-user'></i> <span class=\"voz-nombre\" style=\"color:${colorNombre}\">${data.name}</span>${icono}${docu.id === userId ? ` <span class=\"voz-tu\" style=\"color:${colorNombre};font-weight:bold;z-index:30;\">(Tú)</span>` : ""}`;
       div.setAttribute('data-uid', docu.id);
       usersList.appendChild(div);
+    });
+    // --- NUEVO: Reconexión de peers en tiempo real ---
+    // Llama a todos los usuarios activos (menos tú)
+    usuariosActivos.forEach(peerId => {
+      if (peerId !== userId && !peerConnections[peerId]) {
+        createPeer(peerId, true);
+      }
+    });
+    // Si un usuario se mutea o sale, cierra su peer
+    Object.keys(peerConnections).forEach(peerId => {
+      if (!usuariosActivos.includes(peerId)) {
+        if (peerConnections[peerId]) {
+          peerConnections[peerId].close();
+          delete peerConnections[peerId];
+          let audio = document.getElementById("audio-" + peerId);
+          if (audio) audio.remove();
+        }
+      }
     });
     if (localStream && !isMuted) {
       detectarHablaLocal();
@@ -196,7 +219,8 @@ async function startMic(active) {
       statusDiv.textContent = "Conectado";
       isMuted = false;
       await updateDoc(doc(usersCol, userId), { talking: true, mute: false });
-      callAllPeers();
+      closeAllPeers(); // Cierra conexiones viejas
+      callAllPeers();  // Llama a todos los activos
       detectarHablaLocal();
     } catch (e) {
       statusDiv.textContent = "Error al acceder al micrófono.";
@@ -217,7 +241,7 @@ async function startMic(active) {
     statusDiv.textContent = "Micrófono desactivado.";
     isMuted = true;
     await updateDoc(doc(usersCol, userId), { talking: false, mute: true });
-    closeAllPeers();
+    closeAllPeers(); // Cierra todos los peers y elimina audios remotos
   }
 }
 
