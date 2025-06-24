@@ -1329,3 +1329,82 @@ footer {
     border-color: #00ff99;
     font-weight: bold;
 }
+
+/* --- Efecto de usuario hablando en chat de voz --- */
+/* Regla eliminada para evitar linter y efectos visuales no deseados */
+
+.voz-user {
+  margin: 0.5em 0;
+  padding: 0.7em 1.2em;
+  font-size: 1.15em;
+  background: #181818 !important;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00ff9944;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: bold;
+  transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+.voz-user .voz-nombre {
+  color: #00f2ea;
+  transition: color 0.2s;
+}
+.voz-user.hablando .voz-nombre {
+  color: #00f2ea;
+}
+
+/* Notificación tipo toast para usuario unido a la sala de voz */
+.voz-toast {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: #181818;
+  color: #00ff99;
+  padding: 1em 2em;
+  border-radius: 12px;
+  box-shadow: 0 0 24px #00ff99cc, 0 0 8px #000a;
+  font-size: 1.15em;
+  font-weight: bold;
+  opacity: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.voz-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* Animaciones de micrófono según volumen */
+.voz-vol-icon i { transition: color 0.2s, filter 0.2s; }
+
+.voz-mic-mute { color: #ff3b3b; filter: drop-shadow(0 0 4px #ff3b3b); }
+.voz-mic-idle { color: #888; filter: none; }
+.voz-mic-on { color: #00f2ea; animation: micPulseFuerte 0.7s infinite alternate; filter: drop-shadow(0 0 8px #00f2ea); }
+
+#voz-mic-btn.on {
+  background: #00f2ea;
+  color: #181818;
+  box-shadow: 0 0 24px #00f2ea, 0 0 8px #00f2ea99;
+}
+#voz-mic-btn.off {
+  background: #181818;
+  color: #ff3b3b;
+  box-shadow: 0 0 12px #ff3b3b99;
+}
+
+@keyframes micPulseBajo {
+  from { filter: drop-shadow(0 0 2px #00ff99); }
+  to   { filter: drop-shadow(0 0 8px #00ff99); }
+}
+@keyframes micPulseNormal {
+  from { filter: drop-shadow(0 0 4px #00ff99); }
+  to   { filter: drop-shadow(0 0 16px #00ff99); }
+}
+@keyframes micPulseFuerte {
+  from { filter: drop-shadow(0 0 8px #00ff99); }
+  to   { filter: drop-shadow(0 0 28px #00ff99); }
+}

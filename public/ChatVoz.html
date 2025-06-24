@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat de Voz - LosDL'S</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="images/losDLs-logo.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .voz-container {
+      max-width: 600px;
+      margin: 2.5rem auto;
+      padding: 2.5rem 1.5rem;
+      background: rgba(30,30,30,0.85);
+      border-radius: 18px;
+      box-shadow: none;
+      text-align: center;
+    }
+    .voz-title {
+      color: #00ff99;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px #00ff99;
+    }
+    .voz-users-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .voz-user, .voz-user * {
+      position: relative;
+      z-index: 10;
+    }
+    .voz-user {
+      background: #181818;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      color: #00ff99;
+      font-weight: bold;
+      font-size: 1.1rem;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      gap: 0.7em;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+    .voz-user.hablando {
+      background: rgba(0,255,153,0.18);
+      color: #181818;
+      box-shadow: none;
+      animation: hablarGlow 1s infinite alternate;
+    }
+    .voz-user.hablando .voz-nombre {
+      color: #00f2ea;
+      background: transparent;
+      z-index: 20;
+    }
+    .voz-user .voz-nombre {
+      color: #00f2ea;
+      background: transparent;
+      z-index: 20;
+    }
+    .voz-user .verificado-icon {
+      z-index: 20;
+      color: #00f2ea !important;
+    }
+    .voz-user i, .voz-user .fas {
+      color: #00f2ea !important;
+      z-index: 20;
+    }
+    @keyframes hablarGlow {
+      0% { box-shadow: none; }
+      100% { box-shadow: none; }
+    }
+    .voz-mic-btn {
+      background: #00ff99;
+      color: #181818;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 2rem;
+      margin: 1.5rem auto 1rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+    .voz-mic-btn.off {
+      background: #ff4d4d;
+      color: #fff;
+      box-shadow: none;
+    }
+    .voz-back-btn {
+      margin-top: 2rem;
+      background: transparent;
+      color: #00ff99;
+      border: 2px solid #00ff99;
+      border-radius: 8px;
+      padding: 0.7em 2em;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .voz-back-btn:hover {
+      background: #00ff99;
+      color: #181818;
+      box-shadow: none;
+    }
+    #voz-chat-mensajes {
+      box-shadow: none !important;
+      color: #fff;
+      word-break: break-word;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+    #voz-status {
+      color: #00ff99 !important;
+    }
+    #voz-chat-input {
+      color: #fff !important;
+      background: #222 !important;
+    }
+    #voz-chat-form button {
+      background: #00ff99 !important;
+      color: #181818 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="voz-container">
+    <div class="voz-title">Chat de Voz en Tiempo Real</div>
+    <div id="voz-users-list" class="voz-users-list"></div>
+    <button id="voz-mic-btn" class="voz-mic-btn" title="Activar/Desactivar micrófono">
+      <i class="fas fa-microphone-slash"></i>
+    </button>
+    <div id="voz-status" style="margin-bottom:1.5rem;color:#aaa;"></div>
+    
+    <!-- Chat de texto -->
+    <div id="voz-chat-container" style="margin:2rem auto 0 auto;max-width:480px;text-align:left;">
+      <div id="voz-chat-mensajes" style="height:220px;overflow-y:auto;background:rgba(24,24,24,0.8);border-radius:10px;padding:1rem 0.7rem 0.7rem 0.7rem;margin-bottom:0.7rem;box-shadow:none;"></div>
+      <form id="voz-chat-form" style="display:flex;gap:0.5rem;">
+        <input id="voz-chat-input" type="text" maxlength="200" placeholder="Escribe un mensaje..." autocomplete="off" style="flex:1;padding:0.6em 1em;border-radius:8px;border:none;background:#222;color:#fff;font-size:1em;outline:none;" />
+        <button type="submit" style="background:#00ff99;color:#181818;border:none;border-radius:8px;padding:0.6em 1.2em;font-weight:bold;cursor:pointer;transition:background 0.2s;">Enviar</button>
+      </form>
+    </div>
+    
+    <button onclick="window.location.href='sala.html'" class="voz-back-btn">Volver a la sala</button>
+  </div>
+  <script type="module" src="ChatVoz.js"></script>
+</body>
+</html> 

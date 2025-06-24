@@ -283,8 +283,8 @@ const videoSubmitBtn = document.getElementById('video-submit-btn');
 if (videoSubmitBtn) {
     videoSubmitBtn.addEventListener('click', () => {
         window.open('https://www.profitableratecpm.com/jny3jejk?key=647c9f116f9de87e4983ccb1adb9a58e', '_blank');
-        addMedia('video');
-    });
+    addMedia('video');
+});
 }
 
 syncBtn.addEventListener('click', () => {
@@ -626,15 +626,15 @@ chatInput.addEventListener('input', () => {
 
 // Renaming the function to be more explicit
 function mostrarUsuariosRegistrados() {
-    const apodosRef = collection(db, 'apodos');
-    onSnapshot(apodosRef, (snapshot) => {
-      const apodos = [];
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        apodos.push({ apodo: data.apodo, uid: data.uid });
-      });
-      usuariosRegistradosCantidad.textContent = apodos.length;
-      usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
+const apodosRef = collection(db, 'apodos');
+onSnapshot(apodosRef, (snapshot) => {
+  const apodos = [];
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    apodos.push({ apodo: data.apodo, uid: data.uid });
+  });
+  usuariosRegistradosCantidad.textContent = apodos.length;
+  usuariosRegistradosLista.innerHTML = apodos.map(u => `<span class="apodo-lista">${u.apodo}${VERIFICADOS[u.uid] ? VERIFICADO_ICON : ''}</span>`).join(' ');
     });
 }
 
@@ -645,4 +645,30 @@ if (adSupportLink) {
     adSupportLink.addEventListener('click', () => {
         showFloatingAlert('Gracias por apoyarnos');
     });
-} 
+}
+
+// --- Indicador de usuarios en chat de voz y botón ---
+const voiceChatIndicator = document.getElementById('voice-chat-indicator');
+const goToVoiceChatBtn = document.getElementById('go-to-voice-chat');
+
+if (goToVoiceChatBtn) {
+  goToVoiceChatBtn.onclick = () => {
+    window.location.href = 'ChatVoz.html';
+  };
+}
+
+// Escuchar usuarios activos en chat de voz (colección 'voz_activa')
+import { onSnapshot as onSnapshotVoz, collection as collectionVoz } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+const vozActivaRef = collectionVoz(db, 'voz_activa');
+onSnapshotVoz(vozActivaRef, (snapshot) => {
+  const usuarios = [];
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    if (data && data.apodo) usuarios.push(data.apodo);
+  });
+  if (usuarios.length === 0) {
+    voiceChatIndicator.innerHTML = '<span style="color:#aaa;">Nadie está en el chat de voz</span>';
+  } else {
+    voiceChatIndicator.innerHTML = `<span style="color:#00ff99;font-weight:bold;">En chat de voz:</span> <span style="color:#fff;">${usuarios.join(', ')}</span>`;
+  }
+}); 
