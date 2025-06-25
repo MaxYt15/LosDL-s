@@ -1502,3 +1502,205 @@ footer {
   color: #121212;
   transform: scale(1.06);
 }
+
+/* --- Estilos avanzados para el chat IA DLS (glassmorphism, 3D, efectos modernos) --- */
+#dls-chat-window {
+  background: rgba(24, 24, 24, 0.85);
+  border-radius: 22px;
+  box-shadow: 0 8px 32px #00ffcc44, 0 2px 8px #000a;
+  border: 2.5px solid #00ffcc;
+  animation: chatOpen 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+  backdrop-filter: blur(12px) saturate(1.2);
+  overflow: hidden;
+}
+#dls-chat-window > div:first-child {
+  background: linear-gradient(90deg, #00ffcc 60%, #00bfff 100%);
+  color: #181818;
+  padding: 14px 20px;
+  font-weight: bold;
+  font-size: 1.13rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 12px #00ffcc55;
+  border-bottom: 1.5px solid #00bfff44;
+  text-shadow: 0 0 8px #00ffcc, 0 0 2px #fff;
+  animation: dlsHeaderGlow 2.5s infinite alternate;
+}
+@keyframes dlsHeaderGlow {
+  0% { text-shadow: 0 0 8px #00ffcc, 0 0 2px #fff; }
+  100% { text-shadow: 0 0 18px #00bfff, 0 0 8px #fff; }
+}
+#dls-chat-float #dls-chat-btn {
+  background: linear-gradient(135deg, #00ffcc 60%, #00bfff 100%);
+  box-shadow: 0 4px 18px #00ffcc55, 0 2px 8px #000a;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+#dls-chat-float #dls-chat-btn:hover {
+  transform: scale(1.12) rotate(-8deg);
+  box-shadow: 0 8px 32px #00ffcc99, 0 2px 8px #000a;
+}
+#dls-chat-messages {
+  padding: 18px 12px 10px 12px !important;
+  background: linear-gradient(120deg, #191c1f 80%, #1e2a3a 100%);
+  border-bottom: 1.5px solid #00bfff44;
+}
+.dls-msg-bubble {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0;
+  animation: bubbleIn 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+  filter: drop-shadow(0 2px 8px #00ffcc22);
+}
+.dls-msg-bubble.user { flex-direction: row-reverse; }
+.dls-msg-bubble .dls-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ffcc 60%, #00bfff 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: #181818;
+  box-shadow: 0 2px 12px #00ffcc55, 0 0 0 4px #181818;
+  border: 2.5px solid #fff2;
+  transition: box-shadow 0.2s;
+}
+.dls-msg-bubble.ia .dls-avatar {
+  background: linear-gradient(135deg, #232b2b 60%, #00bfff 100%);
+  color: #00ffcc;
+  border: 2.5px solid #00ffcc;
+  box-shadow: 0 2px 12px #00bfff55, 0 0 0 4px #181818;
+}
+.dls-msg-bubble .dls-msg {
+  padding: 13px 18px;
+  border-radius: 18px 18px 18px 6px;
+  max-width: 80%;
+  font-size: 15.5px;
+  background: linear-gradient(120deg, #232b2b 80%, #00bfff22 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px #00bfff22;
+  border: 1.5px solid #00bfff33;
+  transition: background 0.2s, border 0.2s;
+  position: relative;
+}
+.dls-msg-bubble.user .dls-msg {
+  background: linear-gradient(135deg, #00ffcc 60%, #00bfff 100%);
+  color: #181818;
+  border: 1.5px solid #fff2;
+  border-radius: 18px 18px 6px 18px;
+}
+.dls-msg-bubble .dls-msg::after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: -8px; left: 18px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 60%, #00bfff33 0%, transparent 80%);
+  z-index: 0;
+}
+.dls-msg-bubble.user .dls-msg::after {
+  left: auto; right: 18px;
+  background: radial-gradient(circle at 40% 60%, #00ffcc33 0%, transparent 80%);
+}
+.dls-msg-estado {
+  font-size: 12.5px;
+  color: #00bfff;
+  margin: 2px 0 0 54px;
+  text-align: left;
+  text-shadow: 0 0 4px #00bfff44;
+}
+.dls-msg-estado.user {
+  margin: 2px 54px 0 0;
+  text-align: right;
+  color: #00ffcc;
+  text-shadow: 0 0 4px #00ffcc44;
+}
+.dls-typing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0 12px;
+}
+.dls-typing .dls-avatar {
+  width: 32px; height: 32px; font-size: 18px;
+  background: linear-gradient(135deg, #232b2b 60%, #00bfff 100%);
+  color: #00ffcc;
+  border: 2.5px solid #00ffcc;
+}
+.dls-typing-dots {
+  display: flex; gap: 3px;
+}
+.dls-typing-dots span {
+  display: block;
+  width: 8px; height: 8px;
+  background: #00ffcc;
+  border-radius: 50%;
+  animation: typingDot 1s infinite;
+}
+.dls-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.dls-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-6px); }
+}
+#dls-chat-form {
+  background: rgba(24,24,24,0.92);
+  border-top: 1.5px solid #00bfff44;
+  box-shadow: 0 -2px 8px #00bfff22;
+}
+#dls-chat-input {
+  background: transparent;
+  color: #fff;
+  border: none;
+  padding: 13px 14px;
+  font-size: 15.5px;
+  border-radius: 0 0 0 12px;
+}
+#dls-chat-form button {
+  background: linear-gradient(135deg, #00ffcc 60%, #00bfff 100%);
+  color: #181818;
+  font-weight: bold;
+  border: none;
+  border-radius: 0 0 12px 0;
+  padding: 0 22px;
+  font-size: 15.5px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #00ffcc55;
+  transition: background 0.18s, color 0.18s;
+}
+#dls-chat-form button:hover {
+  background: linear-gradient(135deg, #00bfff 60%, #00ffcc 100%);
+  color: #fff;
+}
+/* --- Fin estilos avanzados chat IA DLS --- */
+
+/* --- Fondo animado dark waves y partículas --- */
+#dls-bg-anim {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#dls-bg-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+.dls-bg-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ffcc44 60%, #00bfff33 100%);
+  filter: blur(2.5px);
+  z-index: 1;
+  pointer-events: none;
+  animation: dlsParticleMove linear infinite;
+}
+@keyframes dlsParticleMove {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-40px) scale(1.15); }
+  100% { transform: translateY(0) scale(1); }
+}
+/* --- Fin fondo animado --- */
