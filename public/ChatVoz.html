@@ -135,14 +135,15 @@
   </style>
 </head>
 <body>
+  <div id="floating-alert"></div>
   <div class="voz-container">
     <div class="voz-title">Chat de Voz en Tiempo Real</div>
     <div id="voz-users-list" class="voz-users-list"></div>
     <button id="voz-mic-btn" class="voz-mic-btn" title="Activar/Desactivar micrófono">
       <i class="fas fa-microphone-slash"></i>
     </button>
+    <select id="mic-select" style="margin:1em auto;display:block;max-width:300px;"></select>
     <div id="voz-status" style="margin-bottom:1.5rem;color:#aaa;"></div>
-    
     <!-- Chat de texto -->
     <div id="voz-chat-container" style="margin:2rem auto 0 auto;max-width:480px;text-align:left;">
       <div id="voz-chat-mensajes" style="height:220px;overflow-y:auto;background:rgba(24,24,24,0.8);border-radius:10px;padding:1rem 0.7rem 0.7rem 0.7rem;margin-bottom:0.7rem;box-shadow:none;"></div>
@@ -151,7 +152,6 @@
         <button type="submit" style="background:#00ff99;color:#181818;border:none;border-radius:8px;padding:0.6em 1.2em;font-weight:bold;cursor:pointer;transition:background 0.2s;">Enviar</button>
       </form>
     </div>
-    
     <button onclick="window.location.href='sala.html'" class="voz-back-btn">Volver a la sala</button>
   </div>
   <script type="module" src="ChatVoz.js"></script>

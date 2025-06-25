@@ -656,9 +656,9 @@ const voiceChatIndicator = document.getElementById('voice-chat-indicator');
 const goToVoiceChatBtn = document.getElementById('go-to-voice-chat');
 
 if (goToVoiceChatBtn) {
-  goToVoiceChatBtn.onclick = () => {
-    window.location.href = 'ChatVoz.html';
-  };
+  goToVoiceChatBtn.addEventListener('click', () => {
+    irAChatVoz();
+  });
 }
 
 // Escuchar usuarios activos en chat de voz (colección 'voz_activa')
@@ -789,4 +789,14 @@ const originalSyncPlayerState = syncPlayerState;
 syncPlayerState = async function(docSnap) {
   await originalSyncPlayerState.apply(this, arguments);
   mostrarBuscadorYouTubeSiNoHayReproduccion();
+}
+
+// Después de obtener el apodo del usuario autenticado y antes de redirigir a ChatVoz.html, guarda el apodo en localStorage
+function irAChatVoz() {
+  if (apodoActual) {
+    localStorage.setItem('apodo', apodoActual);
+    window.location.href = 'ChatVoz.html';
+  } else {
+    alert('No se pudo obtener tu apodo.');
+  }
 } 

@@ -27,6 +27,10 @@ const roomId = "voz";
 const usersCol = collection(db, "voz-users");
 const signalsCol = collection(db, "voz-signals");
 const mensajesCol = collection(db, "voz-mensajes");
+// Variables globales para audio
+let audioContext = null;
+let micSource = null;
+let analyser = null;
 
 // --- UI Elements ---
 const usersList = document.getElementById("voz-users-list");
@@ -35,6 +39,7 @@ const statusDiv = document.getElementById("voz-status");
 const chatMensajesDiv = document.getElementById("voz-chat-mensajes");
 const chatForm = document.getElementById("voz-chat-form");
 const chatInput = document.getElementById("voz-chat-input");
+const micSelect = document.getElementById('mic-select');
 
 // --- Utilidades ---
 function randomId() {
@@ -73,6 +78,44 @@ const VERIFICADOS = {
 };
 const VERIFICADO_ICON = `<span class="verificado-icon" title="Verificado"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#00f2ea"/><path d="M7 13l3 3 7-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
 
+// --- WebSocket para señalización WebRTC ---
+const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const wsHost = window.location.host;
+const ws = new WebSocket(`${wsProtocol}://${wsHost}`);
+let wsReady = false;
+ws.onopen = () => { wsReady = true; if (userId) ws.send(JSON.stringify({ type: 'register', userId })); };
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.from && data.signal) {
+    handleWSSignal(data.from, data.signal);
+  }
+};
+
+function sendWSSignal(to, signal) {
+  if (wsReady) {
+    ws.send(JSON.stringify({ type: 'signal', to, signal }));
+  }
+}
+
+// --- Señalización WebRTC usando WebSocket ---
+function listenSignals() { /* ya no es necesario con WebSocket */ }
+
+// Modifica sendSignal para usar WebSocket
+async function sendSignal(to, type, payload) {
+  sendWSSignal(to, { type, payload });
+}
+
+// Maneja la señalización recibida por WebSocket
+async function handleWSSignal(from, signal) {
+  if (signal.type === "offer") {
+    await handleOffer({ from, payload: signal.payload });
+  } else if (signal.type === "answer") {
+    await handleAnswer({ from, payload: signal.payload });
+  } else if (signal.type === "ice") {
+    await handleIce({ from, payload: signal.payload });
+  }
+}
+
 // --- Inicialización ---
 async function joinRoom(apodo, uid) {
   userName = apodo;
@@ -85,8 +128,7 @@ async function joinRoom(apodo, uid) {
   });
   statusDiv.textContent = "Conectado";
   listenUsers();
-  listenSignals();
-  await startMic(false); // No activar micrófono al entrar
+  if (wsReady) ws.send(JSON.stringify({ type: 'register', userId }));
   mostrarMensajes();
   borrarMensajesSiNoUsuarios();
   detectarHablaLocal();
@@ -180,62 +222,72 @@ function listenUsers() {
   });
 }
 
-// --- Señalización WebRTC ---
-function listenSignals() {
-  onSnapshot(signalsCol, async (snapshot) => {
-    snapshot.docChanges().forEach(async (change) => {
-      const data = change.doc.data();
-      if (data.to !== userId) return;
-      if (data.type === "offer") {
-        await handleOffer(data);
-      } else if (data.type === "answer") {
-        await handleAnswer(data);
-      } else if (data.type === "ice") {
-        await handleIce(data);
-      }
-      // Borra la señal después de procesarla
-      await deleteDoc(doc(signalsCol, change.doc.id));
-    });
-  });
-}
-
-async function sendSignal(to, type, payload) {
-  await addDoc(signalsCol, {
-    from: userId,
-    to,
-    type,
-    payload
-  });
-}
-
 // --- WebRTC ---
-async function startMic(active) {
-  if (active) {
+let microActivo = false;
+let solicitandoMicro = false;
+
+// Enumerar dispositivos de audio
+async function cargarDispositivos() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  micSelect.innerHTML = '';
+  devices.filter(d => d.kind === 'audioinput').forEach(device => {
+    const option = document.createElement('option');
+    option.value = device.deviceId;
+    option.text = device.label || `Micrófono ${micSelect.length + 1}`;
+    micSelect.appendChild(option);
+  });
+}
+// Llama al cargar la página
+cargarDispositivos();
+
+// Si cambian los dispositivos (por ejemplo, conectan/desconectan un micro), recarga la lista
+navigator.mediaDevices.addEventListener('devicechange', cargarDispositivos);
+
+// Modifica la activación del micro para usar el seleccionado
+micBtn.addEventListener("click", async () => {
+  if (solicitandoMicro) return;
+  solicitandoMicro = true;
+  statusDiv.textContent = "";
+  const deviceId = micSelect.value;
+  if (!microActivo) {
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        track.stop();
+        localStream.removeTrack(track);
+      });
+      localStream = null;
+    }
     try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: deviceId ? { exact: deviceId } : undefined }
+      });
       micBtn.classList.remove("off");
       micBtn.classList.add("on");
       micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
       statusDiv.textContent = "Conectado";
       isMuted = false;
+      microActivo = true;
       await updateDoc(doc(usersCol, userId), { talking: true, mute: false });
-      closeAllPeers(); // Cierra conexiones viejas
-      callAllPeers();  // Llama a todos los activos
+      closeAllPeers();
+      callAllPeers();
       detectarHablaLocal();
     } catch (e) {
-      statusDiv.textContent = "Error al acceder al micrófono.";
+      console.error('Error getUserMedia:', e);
+      statusDiv.innerHTML = 'Error al acceder al micrófono.<br>' + (e.message || e.name) + '<br>Permite el acceso en el candado del navegador y vuelve a intentarlo.';
       micBtn.classList.add("off");
       micBtn.classList.remove("on");
       micBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
       isMuted = true;
+      microActivo = false;
       await updateDoc(doc(usersCol, userId), { talking: false, mute: true });
-      // Aunque no tenga micro, puede escuchar a los demás
-      closeAllPeers();
-      callAllPeers();
     }
   } else {
     if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
+      localStream.getTracks().forEach(track => {
+        track.stop();
+        localStream.removeTrack(track);
+      });
       localStream = null;
     }
     micBtn.classList.add("off");
@@ -243,15 +295,12 @@ async function startMic(active) {
     micBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
     statusDiv.textContent = "Micrófono desactivado.";
     isMuted = true;
+    microActivo = false;
     await updateDoc(doc(usersCol, userId), { talking: false, mute: true });
-    // Aunque no tenga micro, puede escuchar a los demás
     closeAllPeers();
     callAllPeers();
   }
-}
-
-micBtn.addEventListener("click", () => {
-  startMic(isMuted);
+  solicitandoMicro = false;
 });
 
 window.addEventListener("beforeunload", async () => {
@@ -265,10 +314,8 @@ async function callAllPeers() {
   users.forEach(async (docu) => {
     const peerId = docu.id;
     if (peerId === userId) return;
-    // Permitir que todos (incluso muteados) reciban audio
-    if (!peerConnections[peerId]) {
-      await createPeer(peerId, true);
-    }
+    // Siempre intenta crear el peer (fuerza reconexión)
+    await createPeer(peerId, true);
   });
 }
 
@@ -282,7 +329,12 @@ async function createPeer(peerId, isInitiator) {
   }
   const pc = new RTCPeerConnection({
     iceServers: [
-      { urls: "stun:stun.l.google.com:19302" }
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:openrelay.metered.ca:80",
+        username: "openrelayproject",
+        credential: "openrelayproject"
+      }
     ]
   });
   peerConnections[peerId] = pc;
@@ -372,12 +424,14 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // --- Chat de texto ---
+let lastMessageTimestamp = 0;
 function mostrarMensajes() {
   const q = query(mensajesCol, orderBy("timestamp"));
   onSnapshot(q, async (snapshot) => {
     chatMensajesDiv.innerHTML = "";
     const now = Date.now();
     let mensajesViejos = [];
+    let maxTimestamp = lastMessageTimestamp;
     snapshot.forEach(docu => {
       const data = docu.data();
       // Borrar mensajes de más de 24h
@@ -390,7 +444,15 @@ function mostrarMensajes() {
       let icono = VERIFICADOS[data.uid] ? VERIFICADO_ICON : "";
       div.innerHTML = `<b style='color:#00ff99'>${data.name}${icono}:</b> <span style='color:#fff'>${data.text}</span> <span style='font-size:0.8em;color:#888'>${timeAgo(data.timestamp)}</span>`;
       chatMensajesDiv.appendChild(div);
+      // SINTETIZADOR: solo lee mensajes nuevos y que no sean tuyos
+      if (data.uid !== userId && data.timestamp && data.timestamp.toMillis() > lastMessageTimestamp) {
+        speakText(`${data.name} dice: ${data.text}`);
+      }
+      if (data.timestamp && data.timestamp.toMillis() > maxTimestamp) {
+        maxTimestamp = data.timestamp.toMillis();
+      }
     });
+    lastMessageTimestamp = maxTimestamp;
     // Borrar mensajes viejos
     for (const id of mensajesViejos) {
       await deleteDoc(doc(mensajesCol, id));
@@ -438,8 +500,19 @@ function timeAgo(ts) {
   return "hace más de un día";
 }
 
-// --- Simulador visual de quién está hablando ---
-let analyser, micSource, audioContext;
+// --- ANIMACIÓN Y RESALTADO DE QUIÉN HABLA EN TIEMPO REAL ---
+function resaltarHablando(uid, hablando) {
+  const userDiv = document.querySelector(`.voz-user[data-uid='${uid}']`);
+  if (userDiv) {
+    if (hablando) {
+      userDiv.classList.add('hablando');
+    } else {
+      userDiv.classList.remove('hablando');
+    }
+  }
+}
+
+// --- MEJORAR detectarHablaLocal Y detectarHablaRemoto PARA RESALTAR ---
 function detectarHablaLocal() {
   if (!localStream || isMuted) return;
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -458,15 +531,19 @@ function detectarHablaLocal() {
       if (avg < 10) {
         iconClass = "voz-mic-silencio";
         iconHtml = "<i class='fas fa-microphone-slash'></i>";
+        resaltarHablando(userId, false);
       } else if (avg < 30) {
         iconClass = "voz-mic-bajo";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(userId, true);
       } else if (avg < 60) {
         iconClass = "voz-mic-normal";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(userId, true);
       } else {
         iconClass = "voz-mic-fuerte";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(userId, true);
       }
       icon.innerHTML = iconHtml;
       const iTag = icon.querySelector('i');
@@ -478,7 +555,6 @@ function detectarHablaLocal() {
   checkVolume();
 }
 
-// Para remotos
 function detectarHablaRemoto(peerId, stream) {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioCtx.createMediaStreamSource(stream);
@@ -496,21 +572,36 @@ function detectarHablaRemoto(peerId, stream) {
       if (avg < 10) {
         iconClass = "voz-mic-silencio";
         iconHtml = "<i class='fas fa-microphone-slash'></i>";
+        resaltarHablando(peerId, false);
       } else if (avg < 30) {
         iconClass = "voz-mic-bajo";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(peerId, true);
       } else if (avg < 60) {
         iconClass = "voz-mic-normal";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(peerId, true);
       } else {
         iconClass = "voz-mic-fuerte";
         iconHtml = "<i class='fas fa-microphone'></i>";
+        resaltarHablando(peerId, true);
       }
       icon.innerHTML = iconHtml;
-      icon.querySelector('i').classList.add(iconClass);
+      const iTag = icon.querySelector('i');
+      iTag.classList.remove('voz-mic-silencio', 'voz-mic-bajo', 'voz-mic-normal', 'voz-mic-fuerte');
+      iTag.classList.add(iconClass);
     }
     requestAnimationFrame(checkVolume);
   }
   checkVolume();
+}
+
+// --- SINTETIZADOR DE VOZ PARA MENSAJES DE TEXTO ---
+function speakText(text, lang = 'es-ES') {
+  if ('speechSynthesis' in window) {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang;
+    window.speechSynthesis.speak(utter);
+  }
 }
  
